@@ -1,126 +1,168 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! This is the user manual.
-{% endblock %}
-
-{% block title %}Manual{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! This is the user manual. {% endblock %} {% block
+title %}Manual{% endblock %} {% block content %}
 <main>
-    <h1>User Manual</h1>
-    <p>Welcome to the NBA 2K25 Player Progression System manual. Here you'll find all the information you need to get started and make the most out of our platform.</p>
+  <h1>User Manual</h1>
+  <p>
+    Welcome to the NBA 2K26 Player Progression System manual. Here you'll find
+    all the information you need to get started and make the most out of our
+    platform.
+  </p>
 
-    <!-- Table of Contents -->
-    <h2>Table of Contents</h2>
-    <ul>
-        <li><a href="#video-explainer">A video explainer</a></li>
-        <li><a href="#blurb">The app in a couple of sentences</a></li>
-        <li><a href="#purpose">How did we get here?</a></li>
-        <li><a href="#getting-started">Getting Started</a></li>
-        <li><a href="#creating-player">Creating a Player</a></li>
-        <li><a href="#input-stats">Inputting Game Statistics</a></li>
-        <li><a href="#upgrading-attributes">Upgrading Attributes and Badges</a></li>
-        <li><a href="#settings">Customizing Your Experience</a></li>
-    </ul>
+  <!-- Table of Contents -->
+  <h2>Table of Contents</h2>
+  <ul>
+    <li><a href="#video-explainer">A video explainer</a></li>
+    <li><a href="#blurb">The app in a couple of sentences</a></li>
+    <li><a href="#purpose">How did we get here?</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#creating-player">Creating a Player</a></li>
+    <li><a href="#input-stats">Inputting Game Statistics</a></li>
+    <li><a href="#upgrading-attributes">Upgrading Attributes and Badges</a></li>
+    <li><a href="#settings">Customizing Your Experience</a></li>
+  </ul>
 
-    <!-- Manual Sections -->
-    <h2 id="video-explainer">A video running through the process</h2>
-    <lite-youtube
-        videoid="OswfBspgYz4"
-        params="Controls=1"
-        playlabel="Explainer"
-        title="NBA 2K25 Player Progression Tracker explainer"
-        style="background-image: url(../../static/images/YT-background.webp);">
-    </lite-youtube>
+  <!-- Manual Sections -->
+  <h2 id="video-explainer">A video running through the process</h2>
+  <lite-youtube
+    videoid="OswfBspgYz4"
+    params="Controls=1"
+    playlabel="Explainer"
+    title="NBA 2K26 Player Progression Tracker explainer"
+    style="background-image: url(../../static/images/YT-background.webp)"
+  >
+  </lite-youtube>
 
-    <h2 id="blurb">The app in a couple of sentences</h2>
-    <p>
-        You start off by creating a new MyNBA career in NBA 2K25.
-        You can choose the player you want to play as any way you want.
-        Do you want to play as an existing player? Just take charge of their team and set player lock to the player of your choice.
-        If you want to play as a rookie that was drafted, just simulate a year and take charge of the team they were drafted at.
-        Creating your own player is also a possibility. Just create them before starting a game, add them to a team, start your career and take charge of that team.
-        The world is really your oyster.
-    </p>
-    <p>
-        The next step is going to this website and adding your player here.
-        If you have chosen an existing player, you can even fetch their player data from 2kratings.com automatically.
-    </p>
-    <p>
-        Once the player has been created, you can just play a game in NBA 2K25.
-        After the game, you can open the box score and enter your player statistics (points, rebounds, assists, ...) on this website.
-        According to their achievements, an amount of development points and badge points will be added to your player.
-    </p>
-    <p>
-        These development points and badge points can be spent on upgrading your player.
-    </p>
-    <p>
-        Once you have upgraded what you want, you just go into your roster overview in-game and overwrite the attribute you changed.
-    </p>
+  <h2 id="blurb">The app in a couple of sentences</h2>
+  <p>
+    You start off by creating a new MyNBA career in NBA 2K26. You can choose the
+    player you want to play as any way you want. Do you want to play as an
+    existing player? Just take charge of their team and set player lock to the
+    player of your choice. If you want to play as a rookie that was drafted,
+    just simulate a year and take charge of the team they were drafted at.
+    Creating your own player is also a possibility. Just create them before
+    starting a game, add them to a team, start your career and take charge of
+    that team. The world is really your oyster.
+  </p>
+  <p>
+    The next step is going to this website and adding your player here. If you
+    have chosen an existing player, you can even fetch their player data from
+    2kratings.com automatically.
+  </p>
+  <p>
+    Once the player has been created, you can just play a game in NBA 2K26.
+    After the game, you can open the box score and enter your player statistics
+    (points, rebounds, assists, ...) on this website. According to their
+    achievements, an amount of development points and badge points will be added
+    to your player.
+  </p>
+  <p>
+    These development points and badge points can be spent on upgrading your
+    player.
+  </p>
+  <p>
+    Once you have upgraded what you want, you just go into your roster overview
+    in-game and overwrite the attribute you changed.
+  </p>
 
-    <h2 id="purpose">How did we get here?</h2>
-    <p>
-        A while ago, I found <strong><a href="https://www.reddit.com/user/rustyhwe/" target="_blank">u/ustyhews's</a></strong> thread on <strong><a href="https://www.reddit.com/r/NBA2k/comments/xl11pq/player_lock_progression_system/" target="_blank">a Player Lock Progression System</a></strong> for playing MyLeague as a single player in NBA 2K23. It turned out to be much more fun and less tedious than playing MyCareer. In this system, a player grows more organically, and you don't have to spend hours in the City/Neighbourhood/Boat like you do in MyCareer.
-    </p>
-    <p>
-        Since I'm learning Python programming, I decided to take <strong><a href="https://www.reddit.com/user/rustyhwe/" target="_blank">u/ustyhews's</a></strong> logic and convert it into this website, using Python and flask. This version, NBA 2K25 Player Progression tracker, is based on that same logic, and I’ve extended it with more features, a better user interface, and customization options. 
-    </p>
-    <p>
-        The rough idea is that upgrading is more related to your performances in-game. The better you perform in-game, the more points you can spend on upgrading attributes and badges.
-    </p>
+  <h2 id="purpose">How did we get here?</h2>
+  <p>
+    A while ago, I found
+    <strong
+      ><a href="https://www.reddit.com/user/rustyhwe/" target="_blank"
+        >u/ustyhews's</a
+      ></strong
+    >
+    thread on
+    <strong
+      ><a
+        href="https://www.reddit.com/r/NBA2k/comments/xl11pq/player_lock_progression_system/"
+        target="_blank"
+        >a Player Lock Progression System</a
+      ></strong
+    >
+    for playing MyLeague as a single player in NBA 2K23. It turned out to be
+    much more fun and less tedious than playing MyCareer. In this system, a
+    player grows more organically, and you don't have to spend hours in the
+    City/Neighbourhood/Boat like you do in MyCareer.
+  </p>
+  <p>
+    Since I'm learning Python programming, I decided to take
+    <strong
+      ><a href="https://www.reddit.com/user/rustyhwe/" target="_blank"
+        >u/ustyhews's</a
+      ></strong
+    >
+    logic and convert it into this website, using Python and flask. This
+    version, NBA 2K26 Player Progression tracker, is based on that same logic,
+    and I’ve extended it with more features, a better user interface, and
+    customization options.
+  </p>
+  <p>
+    The rough idea is that upgrading is more related to your performances
+    in-game. The better you perform in-game, the more points you can spend on
+    upgrading attributes and badges.
+  </p>
 
-    <h2 id="getting-started">Getting Started</h2>
-    <p>
-        To begin, you'll need to register an account and log in.
-        You can login <a href="{{ url_for('login') }}">here</a> or register <a href="{{ url_for('register') }}">here</a>. 
-        Both logging in and registering can be done with your Google account.
-    </p>
+  <h2 id="getting-started">Getting Started</h2>
+  <p>
+    To begin, you'll need to register an account and log in. You can login
+    <a href="{{ url_for('login') }}">here</a> or register
+    <a href="{{ url_for('register') }}">here</a>. Both logging in and
+    registering can be done with your Google account.
+  </p>
 
-    <h2 id="creating-player">Creating a Player</h2>
-    <p>
-        Creating a player can either be done by entering all attribute and badge values manually, or by fetching the player data from 2kratings.com for an existing player.
-    </p>
+  <h2 id="creating-player">Creating a Player</h2>
+  <p>
+    Creating a player can either be done by entering all attribute and badge
+    values manually, or by fetching the player data from 2kratings.com for an
+    existing player.
+  </p>
 
-    <h2 id="input-stats">Inputting Game Statistics</h2>
-    <p>
-        After a game you played in NBA 2K25, you can take a look at the box score.
-        You will need to enter your points, assists, rebounds, blocks and steals.
-        There is also a box to tick if you became player of the game.
+  <h2 id="input-stats">Inputting Game Statistics</h2>
+  <p>
+    After a game you played in NBA 2K26, you can take a look at the box score.
+    You will need to enter your points, assists, rebounds, blocks and steals.
+    There is also a box to tick if you became player of the game. In this
+    screen, you can also tick a box if you won one of the following awards:
+    player of the week, player of the month, ROTY, DPOY, MVP or champion.
+  </p>
 
-        In this screen, you can also tick a box if you won one of the following awards: player of the week, player of the month, ROTY, DPOY, MVP or champion.
-    </p>
+  <h2 id="upgrading-attributes">Upgrading Attributes and Badges</h2>
+  <p>
+    Upgrading attributes and badges can be done with the development points and
+    badge points you earned. The higher an attribute is, the more it will cost
+    to upgrade it.
+  </p>
+  <p>
+    For badges, the situation is slightly different. When upgrading a badge with
+    badge points, an upgrade of one level (e.g. Bronze to Silver) costs exactly
+    one badge point, regardless of the level. If you want to upgrade a badge
+    with development points, the higher the level is, the more it will cost.
+  </p>
+  <p>
+    You have two options when it comes to upgrading attributes and badges. You
+    can just upgrade whatever you want to the level you want. This lack of
+    restrictions is a big difference with the myPlayer career. Another option is
+    upgrading to emulate an existing player, be it an active one or a legend. To
+    do this, you can set your target attributes and badges to the values you
+    want to work towards. You can even fetch these values from 2kratings.com to
+    make it easier.
+  </p>
 
-    <h2 id="upgrading-attributes">Upgrading Attributes and Badges</h2>
-    <p>
-        Upgrading attributes and badges can be done with the development points and badge points you earned.
-        The higher an attribute is, the more it will cost to upgrade it.
-    </p>
-    <p>
-        For badges, the situation is slightly different.
-        When upgrading a badge with badge points, an upgrade of one level (e.g. Bronze to Silver) costs exactly one badge point, regardless of the level.
-        If you want to upgrade a badge with development points, the higher the level is, the more it will cost.
-    </p>
-    <p>
-        You have two options when it comes to upgrading attributes and badges.
-        You can just upgrade whatever you want to the level you want. This lack of restrictions is a big difference with the myPlayer career.
-        Another option is upgrading to emulate an existing player, be it an active one or a legend. 
-        To do this, you can set your target attributes and badges to the values you want to work towards.
-        You can even fetch these values from 2kratings.com to make it easier.
-    </p>
+  <h2 id="settings">Customizing Your Experience</h2>
+  <p>
+    At this point, there are two ways you can customize your experience. You can
+    adjust the point scoring logic to give a bigger or smaller weight to certain
+    statistics (e.g. rebounds, assists, ...).
+  </p>
+  <p>
+    You can also set your own development targets. This can either be based on
+    specific attributes (e.g. I want to work towards a player that has 95 Steal,
+    97 Block, ...). What I like even more, is the ability to emulate a current
+    or classic player. These data can be fetched from 2kratings.com too.
+  </p>
 
-    <h2 id="settings">Customizing Your Experience</h2>
-    <p>
-        At this point, there are two ways you can customize your experience.
-        You can adjust the point scoring logic to give a bigger or smaller weight to certain statistics (e.g. rebounds, assists, ...).
-    </p>
-    <p>
-        You can also set your own development targets.
-        This can either be based on specific attributes (e.g. I want to work towards a player that has 95 Steal, 97 Block, ...).
-        What I like even more, is the ability to emulate a current or classic player.
-        These data can be fetched from 2kratings.com too.
-    </p>
-
-    <!-- ...Add more content as needed... -->
+  <!-- ...Add more content as needed... -->
 </main>
 {% endblock %}

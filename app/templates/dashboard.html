@@ -1,31 +1,34 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! This is the dashboard.
-{% endblock %}
-
-{% block title %}Dashboard{% endblock %} 
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! This is the dashboard. {% endblock %} {% block title
+%}Dashboard{% endblock %} {% block content %}
 <main class="dashboard-main">
-    <h1>Player Progression Tracker Dashboard</h1>
-    <!-- Dashboard with vertical navigation. -->
-    <div>
-        <p>Welcome to the NBA 2K25 Player Progression System. Select an option from the menu to get started.</p>
-        <!-- Navigation list styled to appear one below the other. -->
-        <nav>
-            <ul>
-                <li>
-                    <a href="{{ url_for('add_player') }}" class="button">Create a Player</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('upgrade_attribute') }}" class="button">Upgrade Attributes/Badges</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('input_stats') }}" class="button">Input Game Statistics</a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+  <h1>Player Progression Tracker Dashboard</h1>
+  <!-- Dashboard with vertical navigation. -->
+  <div>
+    <p>
+      Welcome to the NBA 2K26 Player Progression System. Select an option from
+      the menu to get started.
+    </p>
+    <!-- Navigation list styled to appear one below the other. -->
+    <nav>
+      <ul>
+        <li>
+          <a href="{{ url_for('add_player') }}" class="button"
+            >Create a Player</a
+          >
+        </li>
+        <li>
+          <a href="{{ url_for('upgrade_attribute') }}" class="button"
+            >Upgrade Attributes/Badges</a
+          >
+        </li>
+        <li>
+          <a href="{{ url_for('input_stats') }}" class="button"
+            >Input Game Statistics</a
+          >
+        </li>
+      </ul>
+    </nav>
+  </div>
 </main>
 {% endblock %}

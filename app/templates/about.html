@@ -1,44 +1,91 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! Track, improve, and emulate your favorite NBA players.
-{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! Track, improve, and emulate your favorite NBA
+players. {% endblock %} {% block content %}
 <main>
-    <h1>About NBA 2K25 Player Progression System</h1>
-    <p>
-        A while ago, I found <strong><a href="https://www.reddit.com/user/rustyhwe/" target="_blank">u/ustyhews's</a></strong> thread on <strong><a href="https://www.reddit.com/r/NBA2k/comments/xl11pq/player_lock_progression_system/" target="_blank">a Player Lock Progression System</a></strong> for playing MyLeague as a single player in NBA 2K23. It turned out to be much more fun and less tedious than playing MyCareer. In this system, a player grows more organically, and you don't have to spend hours in the City/Neighbourhood/Boat like you do in MyCareer.
-    </p>
-    <p>
-        Since I'm learning Python programming, I decided to take <strong><a href="https://www.reddit.com/user/rustyhwe/" target="_blank">u/ustyhews's</a></strong> logic and convert it into this website, using Python and flask. This version, NBA 2K25 Player Progression tracker, is based on that same logic, and I’ve extended it with more features, a better user interface, and customization options. The entire project is open-source, you can find the Python code on <strong><a href="https://github.com/JonasDockx/NBA2K25_PLP" target="_blank">Github</a></strong>
-    </p>
-    <p>
-        The rough idea is that upgrading is more related to your performances in-game. The better you perform in-game, the more points you can spend on upgrading attributes and badges.
-    </p>
-    <p>
-        The program has a simple interface, and everything can be tracked in just a couple of screens:
-    </p>
-    <ul>
-        <li><a href="{{ url_for('dashboard') }}">Dashboard</a>: The starting screen. You can create new players, input game statistics for existing players or upgrade attributes or badges.</li>
-        <li><a href="{{ url_for('add_player') }}">Create a New player</a>: You can add a new player to track here.</li>
-        <li><a href="{{ url_for('input_stats') }}">Inputting Game Statistics</a>: Enter stats after every game or award to generate development and badge points.</li>
-        <li><a href="{{ url_for('upgrade_attribute') }}">Spending Points on Attributes and Badges</a>: Upgrade your player's attributes and badges with the points you've earned in game.</li>
-        <li><a href="{{ url_for('profile') }}">Profile administration</a>: Change your password, delete your account or customise the points earning system here.</li>
-    </ul>
-    <p>
-        Everything you need can be found on this website.
-    </p>
-    <p>
-        Feel free to try it out, suggest improvements, or contribute in any way. All feedback and help are greatly appreciated!
-    </p>
-    <p>
-        Jonas Dockx
-    </p>
+  <h1>About NBA 2K26 Player Progression System</h1>
+  <p>
+    A while ago, I found
+    <strong
+      ><a href="https://www.reddit.com/user/rustyhwe/" target="_blank"
+        >u/ustyhews's</a
+      ></strong
+    >
+    thread on
+    <strong
+      ><a
+        href="https://www.reddit.com/r/NBA2k/comments/xl11pq/player_lock_progression_system/"
+        target="_blank"
+        >a Player Lock Progression System</a
+      ></strong
+    >
+    for playing MyLeague as a single player in NBA 2K23. It turned out to be
+    much more fun and less tedious than playing MyCareer. In this system, a
+    player grows more organically, and you don't have to spend hours in the
+    City/Neighbourhood/Boat like you do in MyCareer.
+  </p>
+  <p>
+    Since I'm learning Python programming, I decided to take
+    <strong
+      ><a href="https://www.reddit.com/user/rustyhwe/" target="_blank"
+        >u/ustyhews's</a
+      ></strong
+    >
+    logic and convert it into this website, using Python and flask. This
+    version, NBA 2K26 Player Progression tracker, is based on that same logic,
+    and I’ve extended it with more features, a better user interface, and
+    customization options. The entire project is open-source, you can find the
+    Python code on
+    <strong
+      ><a href="https://github.com/JonasDockx/NBA2K25_PLP" target="_blank"
+        >Github</a
+      ></strong
+    >
+  </p>
+  <p>
+    The rough idea is that upgrading is more related to your performances
+    in-game. The better you perform in-game, the more points you can spend on
+    upgrading attributes and badges.
+  </p>
+  <p>
+    The program has a simple interface, and everything can be tracked in just a
+    couple of screens:
+  </p>
+  <ul>
+    <li>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>: The starting screen.
+      You can create new players, input game statistics for existing players or
+      upgrade attributes or badges.
+    </li>
+    <li>
+      <a href="{{ url_for('add_player') }}">Create a New player</a>: You can add
+      a new player to track here.
+    </li>
+    <li>
+      <a href="{{ url_for('input_stats') }}">Inputting Game Statistics</a>:
+      Enter stats after every game or award to generate development and badge
+      points.
+    </li>
+    <li>
+      <a href="{{ url_for('upgrade_attribute') }}"
+        >Spending Points on Attributes and Badges</a
+      >: Upgrade your player's attributes and badges with the points you've
+      earned in game.
+    </li>
+    <li>
+      <a href="{{ url_for('profile') }}">Profile administration</a>: Change your
+      password, delete your account or customise the points earning system here.
+    </li>
+  </ul>
+  <p>Everything you need can be found on this website.</p>
+  <p>
+    Feel free to try it out, suggest improvements, or contribute in any way. All
+    feedback and help are greatly appreciated!
+  </p>
+  <p>Jonas Dockx</p>
 
-    <!-- Contact Form -->
-    <h2>Contact Us</h2>
-    <!-- <form method="POST" action="{{ url_for('contact') }}">
+  <!-- Contact Form -->
+  <h2>Contact Us</h2>
+  <!-- <form method="POST" action="{{ url_for('contact') }}">
         <label for="name">Your Name:</label>
         <input type="text" id="name" name="name" required>
 
@@ -50,13 +97,16 @@ Welcome to the NBA 2K25 Player Progression Tracker! Track, improve, and emulate 
 
         <button type="submit" class="button">Send</button>
     </form> -->
-    <p>
-        E-mail: <a href="mailto:2kprogressiontracker@gmail.com">2kprogressiontracker@gmail.com</a>
-    </p>
+  <p>
+    E-mail:
+    <a href="mailto:2kprogressiontracker@gmail.com"
+      >2kprogressiontracker@gmail.com</a
+    >
+  </p>
 
-    <h2>Cookie policy</h2>
-    <p>
-        Our cookie policy can be read <a href="{{ url_for('cookies') }}">here</a>.
-    </p>
+  <h2>Cookie policy</h2>
+  <p>
+    Our cookie policy can be read <a href="{{ url_for('cookies') }}">here</a>.
+  </p>
 </main>
 {% endblock %}

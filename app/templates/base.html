@@ -1,112 +1,120 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="{% block meta_description %}This is the NBA 2K25 Player Progression Tracker for MyNBA.{% endblock %}">
-        <title>{% block title %}NBA 2K25{% endblock %}</title>
-        <!-- Link the external stylesheet -->
-        <link rel="stylesheet" href="../../static/lite-yt-embed.css">
-        <link rel="stylesheet" href="../../static/styles.css">
-        <!-- Preconnect for YouTube -->
-        <link rel="preconnect" href="https://www.youtube.com">
-        <link rel="preconnect" href="https://www.google.com">
-        <link rel="preconnect" href="https://i.ytimg.com">
-        <link rel="preconnect" href="https://www.gstatic.com">
-        <link rel="preload" as="image" href="../../static/images/nba.webp" type="image/webp" />
-    </head>
-    <body>
-        <script src="../../static/lite-yt-embed.js" defer></script>
-        <!-- Navigation bar -->
-        <nav class="navbar">
-            <input type="checkbox" id="nav-toggle" class="nav-toggle">
-            <label for="nav-toggle" class="hamburger">☰</label>
-            <label for="nav-toggle" class="close-menu">×</label>
-            <div class="nav-menu">
-                <div class="navdiv">
-                    <a href="{{ url_for('home') }}">Home</a>
-                    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a href="{{ url_for('add_player') }}">Create New Player</a>
-                    <a href="{{ url_for('input_stats') }}">Input Game Statistics</a>
-                    <a href="{{ url_for('upgrade_attribute') }}">Upgrade Attributes/Badges</a>
-                    <a href="{{ url_for('profile') }}">Profile</a>
-                    <a href="{{ url_for('about') }}">About</a>
-                </div>
-            </div>
-            <!-- Right-aligned Username and Logout -->
-            <div class="nav-right">
-                {% if current_user.is_authenticated %}
-                <span>Logged in as: {{ current_user.username }}</span>
-                <form action="{{ url_for('logout') }}" method="POST">
-                    <button type="submit">Logout</button>
-                </form>
-                {% endif %}
-            </div>
-        </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="{% block meta_description %}This is the NBA 2K26 Player Progression Tracker for MyNBA.{% endblock %}"
+    />
+    <title>{% block title %}NBA 2K26{% endblock %}</title>
+    <!-- Link the external stylesheet -->
+    <link rel="stylesheet" href="../../static/lite-yt-embed.css" />
+    <link rel="stylesheet" href="../../static/styles.css" />
+    <!-- Preconnect for YouTube -->
+    <link rel="preconnect" href="https://www.youtube.com" />
+    <link rel="preconnect" href="https://www.google.com" />
+    <link rel="preconnect" href="https://i.ytimg.com" />
+    <link rel="preconnect" href="https://www.gstatic.com" />
+    <link
+      rel="preload"
+      as="image"
+      href="../../static/images/nba.webp"
+      type="image/webp"
+    />
+  </head>
+  <body>
+    <script src="../../static/lite-yt-embed.js" defer></script>
+    <!-- Navigation bar -->
+    <nav class="navbar">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" />
+      <label for="nav-toggle" class="hamburger">☰</label>
+      <label for="nav-toggle" class="close-menu">×</label>
+      <div class="nav-menu">
+        <div class="navdiv">
+          <a href="{{ url_for('home') }}">Home</a>
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('add_player') }}">Create New Player</a>
+          <a href="{{ url_for('input_stats') }}">Input Game Statistics</a>
+          <a href="{{ url_for('upgrade_attribute') }}"
+            >Upgrade Attributes/Badges</a
+          >
+          <a href="{{ url_for('profile') }}">Profile</a>
+          <a href="{{ url_for('about') }}">About</a>
+        </div>
+      </div>
+      <!-- Right-aligned Username and Logout -->
+      <div class="nav-right">
+        {% if current_user.is_authenticated %}
+        <span>Logged in as: {{ current_user.username }}</span>
+        <form action="{{ url_for('logout') }}" method="POST">
+          <button type="submit">Logout</button>
+        </form>
+        {% endif %}
+      </div>
+    </nav>
 
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
 
-        <!-- Main content -->
-        {% block content %}{% endblock %}
+    <!-- Main content -->
+    {% block content %}{% endblock %}
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const navToggle = document.getElementById('nav-toggle');
-                const navMenu = document.querySelector('.nav-menu');
-                const navbar = document.querySelector('.navbar');
-        
-                function handleClickOutside(event) {
-                    if (!navbar.contains(event.target)) {
-                        navToggle.checked = false;
-                        document.removeEventListener('click', handleClickOutside);
-                    }
-                }
-        
-                navToggle.addEventListener('change', function() {
-                    if (navToggle.checked) {
-                        // Menu is open; add event listener after a brief delay
-                        setTimeout(function() {
-                            document.addEventListener('click', handleClickOutside);
-                        }, 0);
-                    } else {
-                        // Menu is closed; remove the event listener
-                        document.removeEventListener('click', handleClickOutside);
-                    }
-                });
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const navToggle = document.getElementById("nav-toggle");
+        const navMenu = document.querySelector(".nav-menu");
+        const navbar = document.querySelector(".navbar");
+
+        function handleClickOutside(event) {
+          if (!navbar.contains(event.target)) {
+            navToggle.checked = false;
+            document.removeEventListener("click", handleClickOutside);
+          }
+        }
+
+        navToggle.addEventListener("change", function () {
+          if (navToggle.checked) {
+            // Menu is open; add event listener after a brief delay
+            setTimeout(function () {
+              document.addEventListener("click", handleClickOutside);
+            }, 0);
+          } else {
+            // Menu is closed; remove the event listener
+            document.removeEventListener("click", handleClickOutside);
+          }
+        });
+      });
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const hamburger = document.querySelector(".hamburger");
+        const flashMessages = document.querySelectorAll(".alert");
+
+        if (hamburger) {
+          hamburger.addEventListener("click", function () {
+            flashMessages.forEach((message) => {
+              message.style.display = "none";
             });
-        </script>
+          });
+        }
+      });
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const hamburger = document.querySelector('.hamburger');
-                const flashMessages = document.querySelectorAll('.alert');
-
-                if (hamburger) {
-                    hamburger.addEventListener('click', function () {
-                        flashMessages.forEach(message => {
-                            message.style.display = 'none';
-                        });
-                    });
-                }
-            });
-
-            // Auto-hide flash messages after a delay //
-            setTimeout(() => {
-                const flashMessages = document.querySelectorAll(".alert");
-                flashMessages.forEach(message => {
-                    message.classList.add("hidden");
-                });
-            }, 5000);
-        </script>
-
-    </body>
+      // Auto-hide flash messages after a delay //
+      setTimeout(() => {
+        const flashMessages = document.querySelectorAll(".alert");
+        flashMessages.forEach((message) => {
+          message.classList.add("hidden");
+        });
+      }, 5000);
+    </script>
+  </body>
 </html>

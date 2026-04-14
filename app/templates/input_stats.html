@@ -1,82 +1,90 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! You can input the game statistics here.
-{% endblock %}
-
-{% block title %}Input Game Statistics{% endblock %} 
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! You can input the game statistics here. {% endblock
+%} {% block title %}Input Game Statistics{% endblock %} {% block content %}
 <main>
-    <h1>Input Game Statistics</h1>
-    <!-- Form for inputting game statistics goes here. -->
-    <form method="POST">
-        <label for="player_id">Select Player:</label>
-        <select name="player_id">
-            {% for player in players %}
-            <option value="{{ player.id }}">{{ player.name }}</option>
-            {% endfor %}
-        </select><br>
+  <h1>Input Game Statistics</h1>
+  <!-- Form for inputting game statistics goes here. -->
+  <form method="POST">
+    <label for="player_id">Select Player:</label>
+    <select name="player_id">
+      {% for player in players %}
+      <option value="{{ player.id }}">{{ player.name }}</option>
+      {% endfor %}</select
+    ><br />
 
-        <!-- Game Statistics -->
-        <label for="points">Points:</label>
-        <input type="number" name="points" value="0"><br>
-        
-        <label for="rebounds">Rebounds:</label>
-        <input type="number" name="rebounds" value="0"><br>
-        
-        <label for="assists">Assists:</label>
-        <input type="number" name="assists" value="0"><br>
+    <!-- Game Statistics -->
+    <label for="points">Points:</label>
+    <input type="number" name="points" value="0" /><br />
 
-        <label for="steals">Steals:</label>
-        <input type="number" name="steals" value="0"><br>
+    <label for="rebounds">Rebounds:</label>
+    <input type="number" name="rebounds" value="0" /><br />
 
-        <label for="blocks">Blocks:</label>
-        <input type="number" name="blocks" value="0"><br>
+    <label for="assists">Assists:</label>
+    <input type="number" name="assists" value="0" /><br />
 
-        <!-- Addition Awards -->
-        <div class="award-container">
-            <div class="award-item">
-                <label for="player_of_the_game">Player of the Game</label>
-                <input type="checkbox" id="player_of_the_game" name="player_of_the_game">
-            </div>
-            <div class="award-item">
-                <label for="player_of_the_week">Player of the Week</label>
-                <input type="checkbox" id="player_of_the_week" name="player_of_the_week">
-            </div>
-            <div class="award-item">
-                <label for="player_of_the_month">Player of the Month</label>
-                <input type="checkbox" id="player_of_the_month" name="player_of_the_month">
-            </div>
-            <div class="award-item">
-                <label for="roty">Rookie of the Year (ROTY)</label>
-                <input type="checkbox" id="roty" name="roty">
-            </div>
-            <div class="award-item">
-                <label for="dpoy">Defensive Player of the Year (DPOY)</label>
-                <input type="checkbox" id="dpoy" name="dpoy">
-            </div>
-            <div class="award-item">
-                <label for="mvp">Most Valuable Player (MVP)</label>
-                <input type="checkbox" id="mvp" name="mvp">
-            </div>
-            <div class="award-item">
-                <label for="champion">Champion</label>
-                <input type="checkbox" id="champion" name="champion">
-            </div>
-        </div>
-        <!-- <label><input type="checkbox" name="player_of_the_game"> Player of the Game</label><br>
+    <label for="steals">Steals:</label>
+    <input type="number" name="steals" value="0" /><br />
+
+    <label for="blocks">Blocks:</label>
+    <input type="number" name="blocks" value="0" /><br />
+
+    <!-- Addition Awards -->
+    <div class="award-container">
+      <div class="award-item">
+        <label for="player_of_the_game">Player of the Game</label>
+        <input
+          type="checkbox"
+          id="player_of_the_game"
+          name="player_of_the_game"
+        />
+      </div>
+      <div class="award-item">
+        <label for="player_of_the_week">Player of the Week</label>
+        <input
+          type="checkbox"
+          id="player_of_the_week"
+          name="player_of_the_week"
+        />
+      </div>
+      <div class="award-item">
+        <label for="player_of_the_month">Player of the Month</label>
+        <input
+          type="checkbox"
+          id="player_of_the_month"
+          name="player_of_the_month"
+        />
+      </div>
+      <div class="award-item">
+        <label for="roty">Rookie of the Year (ROTY)</label>
+        <input type="checkbox" id="roty" name="roty" />
+      </div>
+      <div class="award-item">
+        <label for="dpoy">Defensive Player of the Year (DPOY)</label>
+        <input type="checkbox" id="dpoy" name="dpoy" />
+      </div>
+      <div class="award-item">
+        <label for="mvp">Most Valuable Player (MVP)</label>
+        <input type="checkbox" id="mvp" name="mvp" />
+      </div>
+      <div class="award-item">
+        <label for="champion">Champion</label>
+        <input type="checkbox" id="champion" name="champion" />
+      </div>
+    </div>
+    <!-- <label><input type="checkbox" name="player_of_the_game"> Player of the Game</label><br>
         <label><input type="checkbox" name="player_of_the_week"> Player of the Week</label><br>
         <label><input type="checkbox" name="player_of_the_month"> Player of the Month</label><br>
         <label><input type="checkbox" name="roty"> Rookie of the Year (ROTY)</label><br>
         <label><input type="checkbox" name="dpoy"> Defensive Player of the Year (DPOY)</label><br>
         <label><input type="checkbox" name="mvp"> Most Valuable Player (MVP)</label><br>
         <label><input type="checkbox" name="champion"> Champion</label><br> -->
-        <button type="submit" class="button">Submit Stats</button>
-    </form>
+    <button type="submit" class="button">Submit Stats</button>
+  </form>
 
-    <a href="{{ url_for('point_system') }}" class="button">Customize Point Settings</a>
+  <a href="{{ url_for('point_system') }}" class="button"
+    >Customize Point Settings</a
+  >
 
-    <a href="{{ url_for('dashboard') }}" class="button">Back to Dashboard</a>
+  <a href="{{ url_for('dashboard') }}" class="button">Back to Dashboard</a>
 </main>
 {% endblock %}

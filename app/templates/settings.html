@@ -1,19 +1,17 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! You can adjust your settings here.
-{% endblock %}
-
-{% block title %}User Settings{% endblock %} 
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! You can adjust your settings here. {% endblock %} {%
+block title %}User Settings{% endblock %} {% block content %}
 <main>
-    <div class="settings-navigation">
-        <h2>Settings</h2>
-        <div>
-            <a href="{{ url_for('point_system') }}" class="button">Point System Settings</a>
-            <a href="{{ url_for('target_settings') }}" class="button">Target Settings</a>
-        </div>
+  <div class="settings-navigation">
+    <h2>Settings</h2>
+    <div>
+      <a href="{{ url_for('point_system') }}" class="button"
+        >Point System Settings</a
+      >
+      <a href="{{ url_for('target_settings') }}" class="button"
+        >Target Settings</a
+      >
     </div>
+  </div>
 </main>
 {% endblock %}

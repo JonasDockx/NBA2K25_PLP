@@ -1,190 +1,366 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! You can adjust the point system here.
-{% endblock %}
-
-{% block title %}Point System Settings{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! You can adjust the point system here. {% endblock %}
+{% block title %}Point System Settings{% endblock %} {% block content %}
 <main>
-    <h2>Point System Settings</h2>
-    <form method="POST" action="{{ url_for('point_system') }}">
-        <h2>Customize Your Point System</h2>
+  <h2>Point System Settings</h2>
+  <form method="POST" action="{{ url_for('point_system') }}">
+    <h2>Customize Your Point System</h2>
 
-        <!-- Scoring thresholds -->
-        <div class="form-group">
-            <label for="points_70">Points for 70+ Points Game:</label>
-            <input type="number" name="points_70" value="{{ settings.points_70 or default_settings.points_70 }}" required>
-        </div>
+    <!-- Scoring thresholds -->
+    <div class="form-group">
+      <label for="points_70">Points for 70+ Points Game:</label>
+      <input
+        type="number"
+        name="points_70"
+        value="{{ settings.points_70 or default_settings.points_70 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_60">Points for 60+ Points Game:</label>
-            <input type="number" name="points_60" value="{{ settings.points_60 or default_settings.points_60 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_60">Points for 60+ Points Game:</label>
+      <input
+        type="number"
+        name="points_60"
+        value="{{ settings.points_60 or default_settings.points_60 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_50">Points for 50+ Points Game:</label>
-            <input type="number" name="points_50" value="{{ settings.points_50 or default_settings.points_50 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_50">Points for 50+ Points Game:</label>
+      <input
+        type="number"
+        name="points_50"
+        value="{{ settings.points_50 or default_settings.points_50 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_40">Points for 40+ Points Game:</label>
-            <input type="number" name="points_40" value="{{ settings.points_40 or default_settings.points_40 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_40">Points for 40+ Points Game:</label>
+      <input
+        type="number"
+        name="points_40"
+        value="{{ settings.points_40 or default_settings.points_40 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_30">Points for 30+ Points Game:</label>
-            <input type="number" name="points_30" value="{{ settings.points_30 or default_settings.points_30 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_30">Points for 30+ Points Game:</label>
+      <input
+        type="number"
+        name="points_30"
+        value="{{ settings.points_30 or default_settings.points_30 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_20">Points for 20+ Points Game:</label>
-            <input type="number" name="points_20" value="{{ settings.points_20 or default_settings.points_20 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_20">Points for 20+ Points Game:</label>
+      <input
+        type="number"
+        name="points_20"
+        value="{{ settings.points_20 or default_settings.points_20 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="points_10">Points for 10+ Points Game:</label>
-            <input type="number" name="points_10" value="{{ settings.points_10 or default_settings.points_10 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="points_10">Points for 10+ Points Game:</label>
+      <input
+        type="number"
+        name="points_10"
+        value="{{ settings.points_10 or default_settings.points_10 }}"
+        required
+      />
+    </div>
 
-        <!-- Rebounds thresholds -->
-        <div class="form-group">
-            <label for="rebounds_20">Points for 20+ Rebounds Game:</label>
-            <input type="number" name="rebounds_20" value="{{ settings.rebounds_20 or default_settings.rebounds_20 }}" required>
-        </div>
+    <!-- Rebounds thresholds -->
+    <div class="form-group">
+      <label for="rebounds_20">Points for 20+ Rebounds Game:</label>
+      <input
+        type="number"
+        name="rebounds_20"
+        value="{{ settings.rebounds_20 or default_settings.rebounds_20 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="rebounds_10">Points for 10+ Rebounds Game:</label>
-            <input type="number" name="rebounds_10" value="{{ settings.rebounds_10 or default_settings.rebounds_10 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="rebounds_10">Points for 10+ Rebounds Game:</label>
+      <input
+        type="number"
+        name="rebounds_10"
+        value="{{ settings.rebounds_10 or default_settings.rebounds_10 }}"
+        required
+      />
+    </div>
 
-        <!-- Assists thresholds -->
-        
-        <div class="form-group">
-            <label for="assists_20">Points for 20+ Assists Game:</label>
-            <input type="number" name="assists_20" value="{{ settings.assists_20 or default_settings.assists_20 }}" required>
-        </div>
+    <!-- Assists thresholds -->
 
-        <div class="form-group">
-            <label for="assists_10">Points for 10+ Assists Game:</label>
-            <input type="number" name="assists_10" value="{{ settings.assists_10 or default_settings.assists_10 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="assists_20">Points for 20+ Assists Game:</label>
+      <input
+        type="number"
+        name="assists_20"
+        value="{{ settings.assists_20 or default_settings.assists_20 }}"
+        required
+      />
+    </div>
 
-        <!-- Steals thresholds -->
-        <div class="form-group">
-            <label for="steals_10">Points for 10+ Steals Game:</label>
-            <input type="number" name="steals_10" value="{{ settings.steals_10 or default_settings.steals_10 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="assists_10">Points for 10+ Assists Game:</label>
+      <input
+        type="number"
+        name="assists_10"
+        value="{{ settings.assists_10 or default_settings.assists_10 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="steals_6">Points for 6+ Steals Game:</label>
-            <input type="number" name="steals_6" value="{{ settings.steals_6 or default_settings.steals_6 }}" required>
-        </div>
+    <!-- Steals thresholds -->
+    <div class="form-group">
+      <label for="steals_10">Points for 10+ Steals Game:</label>
+      <input
+        type="number"
+        name="steals_10"
+        value="{{ settings.steals_10 or default_settings.steals_10 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="steals_3">Points for 3+ Steals Game:</label>
-            <input type="number" name="steals_3" value="{{ settings.steals_3 or default_settings.steals_3 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="steals_6">Points for 6+ Steals Game:</label>
+      <input
+        type="number"
+        name="steals_6"
+        value="{{ settings.steals_6 or default_settings.steals_6 }}"
+        required
+      />
+    </div>
 
-        <!-- Blocks thresholds -->
-        <div class="form-group">
-            <label for="blocks_10">Points for 10+ Blocks Game:</label>
-            <input type="number" name="blocks_10" value="{{ settings.blocks_10 or default_settings.blocks_10 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="steals_3">Points for 3+ Steals Game:</label>
+      <input
+        type="number"
+        name="steals_3"
+        value="{{ settings.steals_3 or default_settings.steals_3 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="blocks_6">Points for 6+ Blocks Game:</label>
-            <input type="number" name="blocks_6" value="{{ settings.blocks_6 or default_settings.blocks_6 }}" required>
-        </div>
+    <!-- Blocks thresholds -->
+    <div class="form-group">
+      <label for="blocks_10">Points for 10+ Blocks Game:</label>
+      <input
+        type="number"
+        name="blocks_10"
+        value="{{ settings.blocks_10 or default_settings.blocks_10 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="blocks_3">Points for 3+ Blocks Game:</label>
-            <input type="number" name="blocks_3" value="{{ settings.blocks_3 or default_settings.blocks_3 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="blocks_6">Points for 6+ Blocks Game:</label>
+      <input
+        type="number"
+        name="blocks_6"
+        value="{{ settings.blocks_6 or default_settings.blocks_6 }}"
+        required
+      />
+    </div>
 
-        <!-- Double Double and Triple Double Points -->
-        <div class="form-group">
-            <label for="double_double_2">Points for Double Double:</label>
-            <input type="number" name="double_double_2" value="{{ settings.double_double_2 or default_settings.double_double_2 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="blocks_3">Points for 3+ Blocks Game:</label>
+      <input
+        type="number"
+        name="blocks_3"
+        value="{{ settings.blocks_3 or default_settings.blocks_3 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="double_double_3">Points for Triple Double:</label>
-            <input type="number" name="double_double_3" value="{{ settings.double_double_3 or default_settings.double_double_3 }}" required>
-        </div>
+    <!-- Double Double and Triple Double Points -->
+    <div class="form-group">
+      <label for="double_double_2">Points for Double Double:</label>
+      <input
+        type="number"
+        name="double_double_2"
+        value="{{ settings.double_double_2 or default_settings.double_double_2 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="double_double_4">Points for Quadruple Double:</label>
-            <input type="number" name="double_double_4" value="{{ settings.double_double_4 or default_settings.double_double_4 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="double_double_3">Points for Triple Double:</label>
+      <input
+        type="number"
+        name="double_double_3"
+        value="{{ settings.double_double_3 or default_settings.double_double_3 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="double_double_5">Points for Quintuple Double:</label>
-            <input type="number" name="double_double_5" value="{{ settings.double_double_5 or default_settings.double_double_5 }}" required>
-        </div>
+    <div class="form-group">
+      <label for="double_double_4">Points for Quadruple Double:</label>
+      <input
+        type="number"
+        name="double_double_4"
+        value="{{ settings.double_double_4 or default_settings.double_double_4 }}"
+        required
+      />
+    </div>
 
-        <!-- Player of the Game/Week/Month -->
-        <div class="form-group">
-            <label for="player_of_the_game">Points for Player of the Game:</label>
-            <input type="number" name="player_of_the_game" value="{{ settings.player_of_the_game or default_settings.player_of_the_game }}" required>
-        </div>
+    <div class="form-group">
+      <label for="double_double_5">Points for Quintuple Double:</label>
+      <input
+        type="number"
+        name="double_double_5"
+        value="{{ settings.double_double_5 or default_settings.double_double_5 }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="player_of_the_week">Points for Player of the Week:</label>
-            <input type="number" name="player_of_the_week" value="{{ settings.player_of_the_week or default_settings.player_of_the_week }}" required>
-        </div>
+    <!-- Player of the Game/Week/Month -->
+    <div class="form-group">
+      <label for="player_of_the_game">Points for Player of the Game:</label>
+      <input
+        type="number"
+        name="player_of_the_game"
+        value="{{ settings.player_of_the_game or default_settings.player_of_the_game }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="player_of_the_month">Points for Player of the Month:</label>
-            <input type="number" name="player_of_the_month" value="{{ settings.player_of_the_month or default_settings.player_of_the_month }}" required>
-        </div>
+    <div class="form-group">
+      <label for="player_of_the_week">Points for Player of the Week:</label>
+      <input
+        type="number"
+        name="player_of_the_week"
+        value="{{ settings.player_of_the_week or default_settings.player_of_the_week }}"
+        required
+      />
+    </div>
 
-        <!-- ROTY, DPOY, MVP, and Champion Points & Badge Points -->
-        <div class="form-group">
-            <label for="roty_points">Points for Rookie of the Year (ROTY):</label>
-            <input type="number" name="roty_points" value="{{ settings.roty_points or default_settings.roty_points }}" required>
-        </div>
+    <div class="form-group">
+      <label for="player_of_the_month">Points for Player of the Month:</label>
+      <input
+        type="number"
+        name="player_of_the_month"
+        value="{{ settings.player_of_the_month or default_settings.player_of_the_month }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="roty_badge">Badge Points for Rookie of the Year (ROTY):</label>
-            <input type="number" name="roty_badge" value="{{ settings.roty_badge or default_settings.roty_badge }}" required>
-        </div>
+    <!-- ROTY, DPOY, MVP, and Champion Points & Badge Points -->
+    <div class="form-group">
+      <label for="roty_points">Points for Rookie of the Year (ROTY):</label>
+      <input
+        type="number"
+        name="roty_points"
+        value="{{ settings.roty_points or default_settings.roty_points }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="dpoy_points">Points for Defensive Player of the Year (DPOY):</label>
-            <input type="number" name="dpoy_points" value="{{ settings.dpoy_points or default_settings.dpoy_points }}" required>
-        </div>
+    <div class="form-group">
+      <label for="roty_badge"
+        >Badge Points for Rookie of the Year (ROTY):</label
+      >
+      <input
+        type="number"
+        name="roty_badge"
+        value="{{ settings.roty_badge or default_settings.roty_badge }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="dpoy_badge">Badge Points for Defensive Player of the Year (DPOY):</label>
-            <input type="number" name="dpoy_badge" value="{{ settings.dpoy_badge or default_settings.dpoy_badge }}" required>
-        </div>
+    <div class="form-group">
+      <label for="dpoy_points"
+        >Points for Defensive Player of the Year (DPOY):</label
+      >
+      <input
+        type="number"
+        name="dpoy_points"
+        value="{{ settings.dpoy_points or default_settings.dpoy_points }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="mvp_points">Points for Most Valuable Player (MVP):</label>
-            <input type="number" name="mvp_points" value="{{ settings.mvp_points or default_settings.mvp_points }}" required>
-        </div>
+    <div class="form-group">
+      <label for="dpoy_badge"
+        >Badge Points for Defensive Player of the Year (DPOY):</label
+      >
+      <input
+        type="number"
+        name="dpoy_badge"
+        value="{{ settings.dpoy_badge or default_settings.dpoy_badge }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="mvp_badge">Badge Points for Most Valuable Player (MVP):</label>
-            <input type="number" name="mvp_badge" value="{{ settings.mvp_badge or default_settings.mvp_badge }}" required>
-        </div>
+    <div class="form-group">
+      <label for="mvp_points">Points for Most Valuable Player (MVP):</label>
+      <input
+        type="number"
+        name="mvp_points"
+        value="{{ settings.mvp_points or default_settings.mvp_points }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="champion_points">Points for Championship:</label>
-            <input type="number" name="champion_points" value="{{ settings.champion_points or default_settings.champion_points }}" required>
-        </div>
+    <div class="form-group">
+      <label for="mvp_badge"
+        >Badge Points for Most Valuable Player (MVP):</label
+      >
+      <input
+        type="number"
+        name="mvp_badge"
+        value="{{ settings.mvp_badge or default_settings.mvp_badge }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <label for="champion_badge">Badge Points for Championship:</label>
-            <input type="number" name="champion_badge" value="{{ settings.champion_badge or default_settings.champion_badge }}" required>
-        </div>
+    <div class="form-group">
+      <label for="champion_points">Points for Championship:</label>
+      <input
+        type="number"
+        name="champion_points"
+        value="{{ settings.champion_points or default_settings.champion_points }}"
+        required
+      />
+    </div>
 
-        <div class="form-group">
-            <button type="submit" name="save_points" value="Save Points" class="button">Save Settings</button>
-            <button type="submit" name="revert_default" value="true" class="btn btn-danger">Revert to Default</button>
-        </div>
-    </form>
+    <div class="form-group">
+      <label for="champion_badge">Badge Points for Championship:</label>
+      <input
+        type="number"
+        name="champion_badge"
+        value="{{ settings.champion_badge or default_settings.champion_badge }}"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <button
+        type="submit"
+        name="save_points"
+        value="Save Points"
+        class="button"
+      >
+        Save Settings
+      </button>
+      <button
+        type="submit"
+        name="revert_default"
+        value="true"
+        class="btn btn-danger"
+      >
+        Revert to Default
+      </button>
+    </div>
+  </form>
 </main>
 {% endblock %}

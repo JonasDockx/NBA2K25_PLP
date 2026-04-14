@@ -1,31 +1,35 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! You can adjust your profile here.
-{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! You can adjust your profile here. {% endblock %} {%
+block content %}
 <main>
-    <h2>Profile</h2>
+  <h2>Profile</h2>
 
-    <p>Username: {{ user.username }}</p>
-    <p>Email: {{ user.email }}</p>
+  <p>Username: {{ user.username }}</p>
+  <p>Email: {{ user.email }}</p>
 
-    <form method="POST" action="{{ url_for('profile') }}">
-        <label for="new_password">New Password</label>
-        <input type="password" name="new_password" required>
+  <form method="POST" action="{{ url_for('profile') }}">
+    <label for="new_password">New Password</label>
+    <input type="password" name="new_password" required />
 
-        <label for="confirm_password">Confirm New Password</label>
-        <input type="password" name="confirm_password" required>
+    <label for="confirm_password">Confirm New Password</label>
+    <input type="password" name="confirm_password" required />
 
-        <button type="submit" class="button">Update Password</button>
-    </form>
+    <button type="submit" class="button">Update Password</button>
+  </form>
 
-    <!-- Delete Account Button -->
-    <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you certain you want to delete your account? This action cannot be undone.')">
-        <button type="submit" class="btn btn-danger">Delete Account</button>
-    </form>
+  <!-- Delete Account Button -->
+  <form
+    action="{{ url_for('delete_account') }}"
+    method="POST"
+    onsubmit="
+      return confirm(
+        'Are you certain you want to delete your account? This action cannot be undone.',
+      );
+    "
+  >
+    <button type="submit" class="btn btn-danger">Delete Account</button>
+  </form>
 
-    <a href="{{ url_for('settings') }}" class="button">Customize Settings</a>
+  <a href="{{ url_for('settings') }}" class="button">Customize Settings</a>
 </main>
 {% endblock %}

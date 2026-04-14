@@ -1,73 +1,73 @@
-{% extends "base.html" %}
-
-{% block meta_description %}
-Welcome to the NBA 2K25 Player Progression Tracker! This is the homepage that shows all advantages.
-{% endblock %}
-
-{% block title %}Home{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+Player Progression Tracker! This is the homepage that shows all advantages. {%
+endblock %} {% block title %}Home{% endblock %} {% block content %}
 <!-- Hero section -->
 <section class="hero">
-    <div class="hero-content">
-        <h1>An NBA 2K Player Career Without the VC</h1>
-        <p>Play a career as a player without the microtransactions or the grinding.</p>
-        <div class="hero-buttons">
-            <a href="{{ url_for('login') }}" class="button">Login</a>
-            <a href="{{ url_for('register') }}" class="button">Register</a>
-        </div>
+  <div class="hero-content">
+    <h1>An NBA 2K Player Career Without the VC</h1>
+    <p>
+      Play a career as a player without the microtransactions or the grinding.
+    </p>
+    <div class="hero-buttons">
+      <a href="{{ url_for('login') }}" class="button">Login</a>
+      <a href="{{ url_for('register') }}" class="button">Register</a>
     </div>
+  </div>
 </section>
 
 <!-- Advantages Section -->
 <section class="advantages">
-    <h2>Why Use This Player Progression Tracker?</h2>
-    <div class="advantage-cards">
-        <div class="card">
-            <h3>No Microtransactions</h3>
-            <p>Enjoy the game fully without grinding or spending extra money.</p>
-        </div>
-        <div class="card">
-            <h3>Upgrade without arbitrary limits</h3>
-            <p>Follow your own path to stardom.</p>
-        </div>
-        <div class="card">
-            <h3>Endlessly customisable</h3>
-            <p>Speed up or slow down the growth, set your own targets.</p>
-        </div>
+  <h2>Why Use This Player Progression Tracker?</h2>
+  <div class="advantage-cards">
+    <div class="card">
+      <h3>No Microtransactions</h3>
+      <p>Enjoy the game fully without grinding or spending extra money.</p>
     </div>
+    <div class="card">
+      <h3>Upgrade without arbitrary limits</h3>
+      <p>Follow your own path to stardom.</p>
+    </div>
+    <div class="card">
+      <h3>Endlessly customisable</h3>
+      <p>Speed up or slow down the growth, set your own targets.</p>
+    </div>
+  </div>
 </section>
 
 <!-- Video Section -->
 <section class="video-section">
-    <h2>See it in Action</h2>
-    <div class="video-container">
-        <lite-youtube
-            videoid="OswfBspgYz4"
-            params="Controls=1"
-            playlabel="Explainer"
-            title="NBA 2K25 Player Progression Tracker explainer"
-            style="background-image: url(../../static/images/YT-background.webp);">
-        </lite-youtube>
-        <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/OswfBspgYz4?si=LqlaJFvxCmd7INwU" 
+  <h2>See it in Action</h2>
+  <div class="video-container">
+    <lite-youtube
+      videoid="OswfBspgYz4"
+      params="Controls=1"
+      playlabel="Explainer"
+      title="NBA 2K26 Player Progression Tracker explainer"
+      style="background-image: url(../../static/images/YT-background.webp)"
+    >
+    </lite-youtube>
+    <!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/OswfBspgYz4?si=LqlaJFvxCmd7INwU" 
                 title="YouTube video player" frameborder="0" 
                 allow="accelerometer; autoplay; clipboard-write; 
                 encrypted-media; gyroscope; picture-in-picture; web-share" 
                 referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
         </iframe> -->
-    </div>
+  </div>
 </section>
-
 
 <!-- Action Buttons Section -->
 <section class="action-buttons">
-    <div class="action-buttons-container">
-        <a href="{{ url_for('manual') }}" class="button">Read the Manual</a>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('add_player') }}" class="button">Start Creating a Player</a>
-        {% else %}
-            <a href="{{ url_for('register') }}" class="button">Register to Start Creating a Player</a>
-        {% endif %}
-    </div>
+  <div class="action-buttons-container">
+    <a href="{{ url_for('manual') }}" class="button">Read the Manual</a>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('add_player') }}" class="button"
+      >Start Creating a Player</a
+    >
+    {% else %}
+    <a href="{{ url_for('register') }}" class="button"
+      >Register to Start Creating a Player</a
+    >
+    {% endif %}
+  </div>
 </section>
 {% endblock %}
