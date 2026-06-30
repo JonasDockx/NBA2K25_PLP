@@ -18,6 +18,11 @@ Player Progression Tracker! This is the dashboard. {% endblock %} {% block title
           >
         </li>
         <li>
+          <a href="{{ url_for('edit_player') }}" class="button"
+            >Edit a player</a
+          >
+        </li>
+        <li>
           <a href="{{ url_for('upgrade_attribute') }}" class="button"
             >Upgrade Attributes/Badges</a
           >

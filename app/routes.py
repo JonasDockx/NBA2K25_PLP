@@ -19,6 +19,90 @@ from app.models import User, Player, UserSettings, PlayerTargets
 from utils.gmail_service import send_email
 from utils.scrape_2kratings import scrape_player_data
 
+ATTRIBUTE_LIST = [
+    "agility",
+    "ball_handle",
+    "block",
+    "close_shot",
+    "defensive_consistency",
+    "defensive_rebound",
+    "draw_foul",
+    "driving_dunk",
+    "free_throw",
+    "hands",
+    "help_defense_iq",
+    "hustle",
+    "intangibles",
+    "interior_defense",
+    "layup",
+    "mid_range_shot",
+    "offensive_consistency",
+    "offensive_rebound",
+    "overall_durability",
+    "pass_accuracy",
+    "pass_iq",
+    "pass_perception",
+    "pass_vision",
+    "perimeter_defense",
+    "post_control",
+    "post_fade",
+    "post_hook",
+    "shot_iq",
+    "speed",
+    "speed_with_ball",
+    "stamina",
+    "standing_dunk",
+    "steal",
+    "strength",
+    "three_point_shot",
+    "vertical",
+]
+
+BADGE_LIST = [
+    "aerial_wizard",
+    "ankle_assassin",
+    "bail_out",
+    "boxout_beast",
+    "break_starter",
+    "brick_wall",
+    "challenger", 
+    "deadeye",
+    "dimer",
+    "float_game",
+    "glove",
+    "handles_for_days",
+    "high_flying_denier",
+    "hook_specialist", 
+    "immovable_enforcer",
+    "interceptor",
+    "layup_mixmaster",
+    "lightning_launch",
+    "limitless_range", 
+    "mini_marksman",
+    "off_ball_pest",
+    "on_ball_menace",
+    "paint_patroller",
+    "paint_prodigy",
+    "pick_dodger", 
+    "pogo_stick",
+    "posterizer",
+    "post_fade_phenom",
+    "post_lockdown",
+    "post_powerhouse",
+    "post_up_poet", 
+    "physical_finisher",
+    "rebound_chaser",
+    "rise_up",
+    "set_shot_specialist",
+    "shifty_shooter",
+    "slippery_off_ball", 
+    "strong_handle",
+    "unpluckable",
+    "versatile_visionary",
+]
+
+BADGE_LEVELS = ["None", "Bronze", "Silver", "Gold", "Hall of Fame", "Legendary"]
+
 # Initialize OAuth
 oauth = OAuth(app)
 
@@ -455,26 +539,11 @@ def upgrade_attribute():
     The logic for upgrading the attributes.
     """
 
-    attribute_list = [
-        'agility', 'ball_handle', 'block', 'close_shot', 'defensive_consistency', 'defensive_rebound',
-        'draw_foul', 'driving_dunk', 'free_throw', 'hands', 'help_defense_iq', 'hustle', 'intangibles',
-        'interior_defense', 'layup', 'mid_range_shot', 'offensive_consistency',
-        'offensive_rebound', 'overall_durability', 'pass_accuracy', 'pass_iq', 'pass_perception', 'pass_vision',
-        'perimeter_defense', 'post_control', 'post_fade', 'post_hook', 'shot_iq', 'speed',
-        'speed_with_ball', 'stamina', 'standing_dunk', 'steal', 'strength', 'three_point_shot', 'vertical'
-    ]
+    attribute_list = ATTRIBUTE_LIST
 
-    badge_list = [
-        "aerial_wizard", "ankle_assassin", "bail_out", "boxout_beast", "break_starter", "brick_wall", "challenger", 
-        "deadeye", "dimer", "float_game", "glove", "handles_for_days", "high_flying_denier", "hook_specialist", 
-        "immovable_enforcer", "interceptor", "layup_mixmaster", "lightning_launch", "limitless_range", 
-        "mini_marksman", "off_ball_pest", "on_ball_menace", "paint_patroller", "paint_prodigy", "pick_dodger", 
-        "pogo_stick", "posterizer", "post_fade_phenom", "post_lockdown", "post_powerhouse", "post_up_poet", 
-        "physical_finisher", "rebound_chaser", "rise_up", "set_shot_specialist", "shifty_shooter", "slippery_off_ball", 
-        "strong_handle", "unpluckable", "versatile_visionary"
-    ]
+    badge_list = BADGE_LIST
 
-    badge_levels = ["None", "Bronze", "Silver", "Gold", "Hall of Fame", "Legendary"]
+    badge_levels = BADGE_LEVELS
 
     player = None
     target_values = {}
@@ -849,86 +918,8 @@ def target_settings():
     selected_player = None
     target_values = {}
     target_badges = {}
-    attribute_list = [
-        'agility', 
-        'ball_handle', 
-        'block',
-        'close_shot',
-        'defensive_consistency', 
-        'defensive_rebound', 
-        'draw_foul', 
-        'driving_dunk', 
-        'free_throw', 
-        'hands', 
-        'help_defense_iq', 
-        'hustle', 
-        'intangibles', 
-        'interior_defense', 
-        'layup', 
-        'mid_range_shot', 
-        'offensive_consistency', 
-        'offensive_rebound', 
-        'overall_durability', 
-        'pass_accuracy', 
-        'pass_iq', 
-        'pass_perception', 
-        'pass_vision', 
-        'perimeter_defense', 
-        'post_control', 
-        'post_fade', 
-        'post_hook', 
-        'shot_iq', 
-        'standing_dunk', 
-        'speed', 
-        'speed_with_ball', 
-        'stamina', 
-        'steal', 
-        'strength', 
-        'three_point_shot', 
-        'vertical'
-        ]
-    badge_list = [
-        "aerial_wizard", 
-        "ankle_assassin", 
-        "bail_out", 
-        "boxout_beast", 
-        "break_starter", 
-        "brick_wall", 
-        "challenger", 
-        "deadeye", 
-        "dimer", 
-        "float_game", 
-        "glove", 
-        "handles_for_days", 
-        "high_flying_denier", 
-        "hook_specialist", 
-        "immovable_enforcer", 
-        "interceptor", 
-        "layup_mixmaster", 
-        "lightning_launch", 
-        "limitless_range", 
-        "mini_marksman", 
-        "off_ball_pest", 
-        "on_ball_menace", 
-        "paint_patroller", 
-        "paint_prodigy", 
-        "pick_dodger", 
-        "pogo_stick", 
-        "posterizer", 
-        "post_fade_phenom", 
-        "post_lockdown", 
-        "post_powerhouse", 
-        "post_up_poet", 
-        "physical_finisher", 
-        "rebound_chaser", 
-        "rise_up",
-        "set_shot_specialist", 
-        "shifty_shooter", 
-        "slippery_off_ball", 
-        "strong_handle", 
-        "unpluckable", 
-        "versatile_visionary"
-        ]
+    attribute_list = ATTRIBUTE_LIST
+    badge_list = BADGE_LIST
 
     if request.method == "POST":
         player_id = request.form.get("player_id")
@@ -1265,3 +1256,76 @@ def manual():
 def format_attribute_name(attribute):
     """Converts snake_case attribute names to Title Case with spaces."""
     return attribute.replace('_', ' ').title()
+
+@app.route("/edit_player", methods=["GET", "POST"])
+@login_required
+def edit_player():
+    """
+    Allows the user to edit a player's name, attributes and badges in case
+    of an error at player creation.
+    """
+    attribute_list = ATTRIBUTE_LIST
+    badge_list = BADGE_LIST
+    players = Player.query.filter_by(user_id=current_user.id).all()
+
+    if request.method == "POST":
+        player = Player.query.get_or_404(request.form.get("player_id"))
+
+        # Authorisation (load+save both go through here)
+        if player.user_id != current_user.id:
+            flash("You do not have permission to edit this player.", "danger")
+            return redirect(url_for("dashboard"))
+
+        # Validate everything before writing anything
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            flash("Player name cannot be empty.", "danger")
+            return redirect(url_for("edit_player", player_id=player.id))
+
+        new_attrs = {}
+        for attr in attribute_list:
+            raw = request.form.get(attr)
+            try:
+                val = int(raw)
+            except (TypeError, ValueError):
+                flash(f"{format_attribute_name(attr)} must be a number.", "danger")
+                return redirect(url_for("edit_player", player_id=player.id))
+            if val < 25 or val > 99:
+                flash(f"{format_attribute_name(attr)} must be between 25 and 99.", "danger")
+                return redirect(url_for("edit_player", player_id=player.id))
+            new_attrs[attr] = val
+
+            new_badges = {}
+            for badge in badge_list:
+                level = request.form.get(badge, "None")
+                if level not in BADGE_LEVELS:
+                    flash(f"Invalid level for {format_attribute_name(badge)}.", "danger")
+                    return redirect(url_for("edit_player", player_id=player.id))
+                new_badges[badge] = level
+
+            player.name = name
+            for attr, val in new_attrs.items():
+                setattr(player, attr, val)
+            for badge, level in new_badges.items():
+                setattr(player, badge, level)
+            db.session.commit()
+
+            flash("Player updated successfully.", "success")
+            return redirect(url_for("edit_player", player_id=player.id))
+
+    # GET
+    player = None
+    if "player_id" in request.args:
+        player = Player.query.get_or_404(request.args.get("player_id"))
+        if player.user_id != current_user.id:
+            flash("You do no have permission to edit this player.", "danger")
+            return redirect(url_for("dashboard"))
+
+    return render_template(
+        "edit_player.html",
+        players=players,
+        player=player,
+        attribute_list=attribute_list,
+        badge_list=badge_list,
+        badge_levels=BADGE_LEVELS,
+    )
