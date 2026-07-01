@@ -121,7 +121,7 @@ class Player(db.Model):
     unpluckable = db.Column(db.String(20), default="None")
     versatile_visionary = db.Column(db.String(20), default="None")
 
-    @validates("agility", "ball_handle", "block", "defensive_consistency", "defensive_rebound", "draw_foul", "driving_dunk", "free_throw", "hands", "help_defense_iq", "hustle", "intangibles", "interior_defense", "layup", "mid_range_shot", "offensive_consistency", "offensive_rebound", "overall_durability", "pass_accuracy", "pass_iq", "pass_perception", "pass_vision", "perimeter_defense", "post_control", "post_fade", "post_hook", "shot_iq", "standing_dunk", "speed", "speed_with_ball", "stamina", "steal", "strength", "three_point_shot", "vertical")
+    @validates("agility", "ball_handle", "block", "close_shot", "defensive_consistency", "defensive_rebound", "draw_foul", "driving_dunk", "free_throw", "hands", "help_defense_iq", "hustle", "intangibles", "interior_defense", "layup", "mid_range_shot", "offensive_consistency", "offensive_rebound", "overall_durability", "pass_accuracy", "pass_iq", "pass_perception", "pass_vision", "perimeter_defense", "post_control", "post_fade", "post_hook", "shot_iq", "standing_dunk", "speed", "speed_with_ball", "stamina", "steal", "strength", "three_point_shot", "vertical")
     def validate_attributes(self, key, value):
         """
         Validating attributes to see if values are between 25 and 99.

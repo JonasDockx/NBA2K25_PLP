@@ -7,7 +7,7 @@ import json
 import string
 import requests
 
-from flask import render_template, url_for, flash, redirect, request, session, jsonify
+from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import login_user, current_user, logout_user, login_required
 from authlib.integrations.flask_client import OAuth
 from werkzeug.security import generate_password_hash
@@ -116,6 +116,15 @@ google = oauth.register(
     jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
     client_kwargs={"scope": "openid email profile"}
 )
+
+def get_owned_player(player_id):
+    """
+    Fetch a player by id, 404 if missing, 403 if not owned by current_user.
+    """
+    player = Player.query.get_or_404(player_id)
+    if player.user_id != current_user.id:
+        abort(403)
+    return player
 
 def generate_confirmation_token(email):
     """
@@ -409,7 +418,7 @@ def input_stats():
     if request.method == "POST":
         # Fetch the player
         player_id = request.form.get("player_id")
-        player = Player.query.get(player_id)
+        player = get_owned_player(player_id)
 
         # Fetch user-specific settings
         settings = current_user.settings or create_default_settings(current_user)
@@ -554,7 +563,7 @@ def upgrade_attribute():
         player_id = request.form.get("player_id")
 
         if player_id:
-            player = Player.query.get(player_id)
+            player = get_owned_player(player_id)
 
             if player:
                 targets = PlayerTargets.query.filter_by(player_id=player.id).first()
@@ -663,7 +672,7 @@ def upgrade_attribute():
     player = None
     if "player_id" in request.args:
         player_id = request.args.get("player_id")
-        player = Player.query.get(player_id)
+        player = get_owned_player(player_id)
 
         if player:
             targets = PlayerTargets.query.filter_by(player_id=player_id).first()
@@ -877,12 +886,7 @@ def delete_player(player_id):
     """
     Route for deleting a player. Only the user whe created the player can delete it.
     """
-    player = Player.query.get_or_404(player_id)
-
-    # Ensure that the logged-in user is the owner of the player
-    if player.user_id != current_user.id:
-        flash("You do not have permission to delete this player.", "danger")
-        return redirect(url_for("dashboard"))
+    player = get_owned_player(player_id)
 
     # Delete the player
     db.session.delete(player)
@@ -924,7 +928,7 @@ def target_settings():
     if request.method == "POST":
         player_id = request.form.get("player_id")
         if player_id:
-            selected_player = Player.query.get(player_id)
+            selected_player = get_owned_player(player_id)
 
             targets = PlayerTargets.query.filter_by(player_id=player_id).first()
 
@@ -1269,12 +1273,7 @@ def edit_player():
     players = Player.query.filter_by(user_id=current_user.id).all()
 
     if request.method == "POST":
-        player = Player.query.get_or_404(request.form.get("player_id"))
-
-        # Authorisation (load+save both go through here)
-        if player.user_id != current_user.id:
-            flash("You do not have permission to edit this player.", "danger")
-            return redirect(url_for("dashboard"))
+        player = get_owned_player(request.form.get("player_id"))
 
         # Validate everything before writing anything
         name = (request.form.get("name") or "").strip()
@@ -1316,10 +1315,7 @@ def edit_player():
     # GET
     player = None
     if "player_id" in request.args:
-        player = Player.query.get_or_404(request.args.get("player_id"))
-        if player.user_id != current_user.id:
-            flash("You do no have permission to edit this player.", "danger")
-            return redirect(url_for("dashboard"))
+        player = get_owned_player(request.args.get("player_id"))
 
     return render_template(
         "edit_player.html",
