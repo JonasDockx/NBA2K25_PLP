@@ -11,12 +11,10 @@ from flask import abort, flash, jsonify, redirect, render_template, request, ses
 from flask_login import login_user, current_user, logout_user, login_required
 from authlib.integrations.flask_client import OAuth
 from werkzeug.security import generate_password_hash
-from itsdangerous import URLSafeTimedSerializer
-from google.oauth2.credentials import Credentials
-
-from app import app, db, bcrypt, mail
+from app import app, db, bcrypt
 from app.models import User, Player, UserSettings, PlayerTargets
-from utils.gmail_service import send_email
+from utils.mailer import send_email
+from utils.tokens import generate_confirmation_token, confirm_token
 from utils.scrape_2kratings import scrape_player_data
 
 ATTRIBUTE_LIST = [
@@ -125,28 +123,6 @@ def get_owned_player(player_id):
     if player.user_id != current_user.id:
         abort(403)
     return player
-
-def generate_confirmation_token(email):
-    """
-    Generating a confirmation token.
-    """
-    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-    return serializer.dumps(email, salt=app.config["SECURITY_PASSWORD_SALT"])
-
-def confirm_token(token, expiration=3600):
-    """
-    Confirming the token.
-    """
-    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
-    try:
-        email = serializer.loads(
-            token,
-            salt=app.config["SECURITY_PASSWORD_SALT"],
-            max_age=expiration
-        )
-    except:
-        return False
-    return email
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -809,33 +785,53 @@ def confirm_email(token):
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     """Resetting the user's password."""
+    # The same message whether or not the address is registered, so that this
+    # form cannot be used to discover which e-mail addresses have accounts.
+    sent_message = (
+        "If an account exists for that e-mail address, we've sent a password "
+        "reset link. Please check your inbox and your spam folder."
+    )
+
     if request.method == "POST":
         email = request.form.get("email")
         user = User.query.filter_by(email=email).first()
 
-        if user:
-            token = generate_confirmation_token(user.email)
-            reset_url = url_for("reset_password", token=token, _external=True)
+        if not user:
+            flash(sent_message, "info")
+            return render_template("forgot_password.html")
 
-            send_email(
-                "me", 
-                user.email, 
-                "Reset Your Password", 
-                f"Click the link to reset your password: {reset_url}"
-            )
+        token = generate_confirmation_token(user.email)
+        reset_url = url_for("reset_password", token=token, _external=True)
 
-            flash("A password reset link has been sent to your e-mail.", "info")
+        was_sent = send_email(
+            user.email,
+            "Reset Your Password",
+            f"Click the link to reset your password: {reset_url}"
+        )
+
+        if was_sent:
+            flash(sent_message, "info")
         else:
-            flash("Email not found.", "danger")
+            flash(
+                "Something went wrong on our end and we couldn't send the "
+                "e-mail. Please try again in a few minutes.",
+                "danger"
+            )
 
     return render_template("forgot_password.html")
 
 @app.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     """Resetting the user's password."""
-    try:
-        email = confirm_token(token)
-    except:
+    # confirm_token returns False rather than raising, so this must be an
+    # explicit check - a try/except here would never fire.
+    email = confirm_token(token)
+    if not email:
+        flash("The password reset link is invalid or has expired.", "danger")
+        return redirect(url_for("forgot_password"))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
         flash("The password reset link is invalid or has expired.", "danger")
         return redirect(url_for("forgot_password"))
 
@@ -847,8 +843,6 @@ def reset_password(token):
             flash("Passwords do not match.", "danger")
             return redirect(url_for("reset_password", token=token))
 
-        # Hash the new password and update the user
-        user = User.query.filter_by(email=email).first()
         user.password = bcrypt.generate_password_hash(password).decode("utf-8")
         db.session.commit()
 
@@ -1200,35 +1194,6 @@ def cookies():
     Generating the cookies page.
     """
     return render_template("cookies.html")
-
-@app.route("/contact", methods=["GET", "POST"])
-def contact():
-    """
-    Creating the contact page.
-    """
-    if request.method =="POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        message = request.form["message"]
-
-        if not name or not email or not message:
-            flash("All fields are required.", "danger")
-            return redirect(url_for("about"))
-
-        # Create the e-mail content
-        subject = f"Contact Form Submission from {name}"
-        message_text = f"Message from {name} ({email}):\n\n{message}"
-
-        try:
-            # Use the send_email function to send the message
-            send_email(user_id="me", recipient=app.config["MAIL_DEFAULT_RECIPIENT"], subject=subject, message_text=message_text)
-            flash("Your message has been sent. We will get back to you shortly.", "success")
-        except Exception as e:
-            flash(f"Failed to send message: {str(e)}", "danger")
-
-        return redirect(url_for("about"))
-
-    return render_template("about.html")
 
 @app.route("/scrape_player", methods=["POST"])
 def scrape_player():

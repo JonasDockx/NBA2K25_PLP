@@ -8,8 +8,6 @@ Flask_Login==0.6.3
 flask_mail==0.10.0
 Flask_Migrate==4.0.7
 flask_sqlalchemy==3.1.1
-google_api_python_client==2.145.0
-google_auth_oauthlib==1.2.1
 lxml
 itsdangerous==2.2.0
 protobuf==5.28.3
@@ -17,3 +15,4 @@ python-dotenv==1.0.1
 Requests==2.32.3
 SQLAlchemy==2.0.34
 Werkzeug
+pytest==8.3.3

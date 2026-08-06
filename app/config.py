@@ -16,23 +16,20 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
-    SQLALCHEMY_DATABASE_URI = "sqlite:///nba2k25.db"
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///nba2k25.db")
 
     # Login (Project B) environment variables
     LOGIN_CLIENT_ID = os.environ.get('LOGIN_CLIENT_ID')
     LOGIN_CLIENT_SECRET = os.environ.get('LOGIN_CLIENT_SECRET')
     LOGIN_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
     LOGIN_REDIRECT_URI = os.environ.get('LOGIN_REDIRECT_URI')
-    
-    # Optionally, for Gmail sending (Project A) if you'd like to store them here:
-    EMAIL_CLIENT_ID = os.environ.get('EMAIL_CLIENT_ID')
-    EMAIL_CLIENT_SECRET = os.environ.get('EMAIL_CLIENT_SECRET')
 
     # Flask-Mail configuration
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Email for sending messages
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # Password for the email account
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')  # Address we send from
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # Google App Password, no spaces
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') or os.environ.get('MAIL_USERNAME')
     MAIL_DEFAULT_RECIPIENT = os.environ.get("MAIL_DEFAULT_RECIPIENT")
