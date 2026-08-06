@@ -6,6 +6,7 @@ app/__init__.py.
 import logging
 
 from flask_mail import Message
+import socket
 
 from app import app, mail
 
@@ -38,11 +39,20 @@ def send_email(recipient, subject, message_text):
         sender=app.config["MAIL_DEFAULT_SENDER"]
     )
 
+    # Flask-Mail opens its SMTP socket with no timeout, so an unreachable mail
+    # server hangs the worker until gunicorn kills it at 30s. Cap it well below
+    # that, and put the global default back afterwards so nothing else is
+    # affected.
+    previous_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(15)
     try:
         mail.send(message)
     except Exception:
         logger.exception("Failed to send e-mail to %s", recipient)
         return False
+    finally:
+        socket.setdefaulttimeout(previous_timeout)
+
 
     logger.info("Sent e-mail to %s (subject: %s)", recipient, subject)
     return True
