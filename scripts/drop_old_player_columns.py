@@ -18,11 +18,16 @@ Usage:
 
     python scripts/drop_old_player_columns.py instance/nba2k25.db
 
-SQLite gained ALTER TABLE DROP COLUMN in 3.35. If the server has something
-older, the script falls back to the standard rebuild - create a new table, copy
-the rows over, drop the old one, rename - which works on any version. It tells
-you which path it took. --force-rebuild makes it take the rebuild path even
-where DROP COLUMN would work, which is how the tests exercise it.
+SQLite gained ALTER TABLE DROP COLUMN in 3.35. THE SERVER DOES NOT HAVE IT:
+it runs Ubuntu 20.04 with SQLite 3.31.1, checked 28 Aug 2026. So in production
+this script takes the other path - create a new table, copy the rows over, drop
+the old one, rename - which works on any version. It picks the path itself and
+prints which one before doing anything.
+
+Both paths have been rehearsed on a real production copy: the rebuild on an
+actual 3.31.1 (Ubuntu 20.04 under WSL, same as the server) and the in-place
+drop on 3.50.4. --force-rebuild takes the rebuild path even where DROP COLUMN
+is available, which is how the tests cover it on a modern laptop.
 """
 
 import argparse
@@ -134,6 +139,14 @@ def rebuild_player_table(conn, columns_to_remove):
     Follows the procedure in the SQLite docs. The caller must have turned
     foreign keys off BEFORE opening the transaction - the pragma is a no-op
     inside one.
+
+    The SQLite docs suggest PRAGMA legacy_alter_table=ON around the final
+    rename, so that RENAME TO does not go rewriting REFERENCES clauses in other
+    tables. It is not set here because it is not needed: nothing references
+    "player_new", so there is nothing for the rename to rewrite. Checked on the
+    server's own 3.31.1 against a production copy - player_attribute and
+    player_badge still say REFERENCES player, foreign_key_check is clean, and
+    ON DELETE CASCADE still fires.
     """
     keep = []
     for _, name, decl_type, notnull, default, pk in conn.execute(
