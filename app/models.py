@@ -6,6 +6,18 @@ from flask_login import UserMixin
 from sqlalchemy.orm import validates
 
 from app import db
+from app.game_versions import (
+    BADGE_LEVELS,
+    DEFAULT_BADGE_LEVEL,
+    DEFAULT_GAME_VERSION,
+    DEFAULT_TARGET_ATTRIBUTE_VALUE,
+    DEFAULT_TARGET_BADGE_LEVEL,
+    MAX_ATTRIBUTE_VALUE,
+    MIN_ATTRIBUTE_VALUE,
+    attributes_for,
+    badges_for,
+    is_valid_version,
+)
 
 
 class User(db.Model, UserMixin):
@@ -34,8 +46,20 @@ class Player(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE", name="fk_user_player"), nullable=False)
 
+    # The edition of NBA 2K this player is tracked in. Chosen at creation and
+    # never changed - a player cannot move between Game Versions. Defaulted so
+    # that the old add_player route keeps working until step 4 moves off it;
+    # see docs/adr/0003-existing-players-stamped-2k26.md.
+    game_version = db.Column(db.String(10), nullable=False, default=DEFAULT_GAME_VERSION)
+
     user = db.relationship("User", back_populates="players")
     targets = db.relationship("PlayerTargets", back_populates="player", uselist=False, cascade="all, delete-orphan")
+    attributes = db.relationship(
+        "PlayerAttribute", back_populates="player", cascade="all, delete-orphan"
+    )
+    badges = db.relationship(
+        "PlayerBadge", back_populates="player", cascade="all, delete-orphan"
+    )
 
     # Development and badge points
     devpoints = db.Column(db.Integer, default=0)
@@ -129,6 +153,107 @@ class Player(db.Model):
         if value < 25 or value > 99:
             raise ValueError(f"{key} must be between 25 and 99.")
         return value
+
+    @validates("game_version")
+    def validate_game_version(self, key, value):
+        """
+        Refusing any Game Version app/game_versions.py does not know about, so
+        a typo can never reach the database. Deliberately exact: "2k27" fails.
+        """
+        if not is_valid_version(value):
+            raise ValueError(f"{key} must be a known game version, not {value!r}.")
+        return value
+
+
+class PlayerAttribute(db.Model):
+    """
+    One attribute of one player: its current value and the value being aimed at.
+
+    One row per player per attribute key, created up front at player creation,
+    so no code anywhere has to handle a missing row. See
+    docs/adr/0002-badges-and-attributes-as-rows.md.
+    """
+    __tablename__ = "player_attribute"
+    __table_args__ = (
+        # A player cannot hold the same attribute twice. Matters most during
+        # the step 3 migration, which bulk-inserts these rows.
+        db.UniqueConstraint("player_id", "attribute_key", name="uq_player_attribute_key"),
+        # Normally awkward to add to SQLite after the fact; free here because
+        # the table is being created fresh. It backs up the @validates below
+        # for anything that writes without going through the ORM.
+        db.CheckConstraint(
+            f"value BETWEEN {MIN_ATTRIBUTE_VALUE} AND {MAX_ATTRIBUTE_VALUE}",
+            name="ck_player_attribute_value_range",
+        ),
+        db.CheckConstraint(
+            f"target_value BETWEEN {MIN_ATTRIBUTE_VALUE} AND {MAX_ATTRIBUTE_VALUE}",
+            name="ck_player_attribute_target_range",
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(
+        db.Integer,
+        db.ForeignKey("player.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    attribute_key = db.Column(db.String(50), nullable=False)
+    value = db.Column(db.Integer, nullable=False, default=MIN_ATTRIBUTE_VALUE)
+    target_value = db.Column(
+        db.Integer, nullable=False, default=DEFAULT_TARGET_ATTRIBUTE_VALUE
+    )
+
+    player = db.relationship("Player", back_populates="attributes")
+
+    @validates("value", "target_value")
+    def validate_value(self, key, value):
+        """
+        The whole 36-name list from the old Player.validate_attributes, reduced
+        to one rule on one column. It cannot fall out of step with the
+        attribute list, because it no longer mentions it.
+        """
+        if value < MIN_ATTRIBUTE_VALUE or value > MAX_ATTRIBUTE_VALUE:
+            raise ValueError(
+                f"{key} must be between {MIN_ATTRIBUTE_VALUE} and {MAX_ATTRIBUTE_VALUE}."
+            )
+        return value
+
+
+class PlayerBadge(db.Model):
+    """
+    One badge of one player: the level it is at and the level being aimed at.
+
+    Levels are stored as text ("Gold"), exactly as they were in the old badge
+    columns, so the level arithmetic in the templates carries over unchanged.
+    """
+    __tablename__ = "player_badge"
+    __table_args__ = (
+        db.UniqueConstraint("player_id", "badge_key", name="uq_player_badge_key"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(
+        db.Integer,
+        db.ForeignKey("player.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    badge_key = db.Column(db.String(50), nullable=False)
+    level = db.Column(db.String(20), nullable=False, default=DEFAULT_BADGE_LEVEL)
+    target_level = db.Column(
+        db.String(20), nullable=False, default=DEFAULT_TARGET_BADGE_LEVEL
+    )
+
+    player = db.relationship("Player", back_populates="badges")
+
+    @validates("level", "target_level")
+    def validate_level(self, key, value):
+        """Only the six level names in app/game_versions.py get through."""
+        if value not in BADGE_LEVELS:
+            raise ValueError(
+                f"{key} must be one of {', '.join(BADGE_LEVELS)}, not {value!r}."
+            )
+        return value
+
 
 class UserSettings(db.Model):
     """
@@ -273,3 +398,35 @@ class PlayerTargets(db.Model):
     versatile_visionary = db.Column(db.String(20), default="None")
 
     player = db.relationship("Player", back_populates="targets")
+
+
+def create_rows_for(player):
+    """
+    Give `player` one row per badge and one per attribute of its Game Version.
+
+    Attributes start at 25 aiming at 99; badges start at "None" aiming at
+    "Legendary". Which keys exist comes from the player's own game_version, so
+    a 2K26 player can never be handed a 2K27 badge.
+
+    The rows are added to the session but not committed - the caller decides
+    when to commit, so creating a player and filling it in is one transaction.
+    """
+    for attribute_key in attributes_for(player.game_version):
+        player.attributes.append(
+            PlayerAttribute(
+                attribute_key=attribute_key,
+                value=MIN_ATTRIBUTE_VALUE,
+                target_value=DEFAULT_TARGET_ATTRIBUTE_VALUE,
+            )
+        )
+
+    for badge_key in badges_for(player.game_version):
+        player.badges.append(
+            PlayerBadge(
+                badge_key=badge_key,
+                level=DEFAULT_BADGE_LEVEL,
+                target_level=DEFAULT_TARGET_BADGE_LEVEL,
+            )
+        )
+
+    return player
