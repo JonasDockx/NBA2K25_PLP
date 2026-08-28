@@ -29,6 +29,24 @@ Welcome to the NBA 2K Player Progression Tracker! You can add new players to the
             </div>
         </div>
         <button type="submit" class="button">Fetch Player Data</button>
+
+        <!-- 5b. 2Kratings only ever serves the current game's numbers. This
+             warning is a patch, not a cure: it gets less true every year, and
+             the real fixes (cache ratings per version at fetch time, or allow
+             scraping only for the newest version) are both bigger than this. -->
+        <p class="scrape-warning">
+            <strong>These ratings come from NBA 2K27.</strong>
+            2Kratings only publishes the newest game's numbers, so if you are
+            building a player for NBA 2K25 or NBA 2K26 they may not match what
+            you see in your own game. Treat them as a quick way to fill in the
+            form, not as the final word - check them and change anything that
+            looks wrong before you add the player.
+        </p>
+        <p class="scrape-warning">
+            One box is never filled in for you: 2Kratings does not publish
+            <strong>Intangibles</strong>, so it stays at its default and you can
+            set it yourself.
+        </p>
     </form>
 
     <!-- Form for creating a new player. -->

@@ -1,13 +1,35 @@
-{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K26
+{% extends "base.html" %} {% block meta_description %} Welcome to the NBA 2K
 Player Progression Tracker! This is the dashboard. {% endblock %} {% block title
 %}Dashboard{% endblock %} {% block content %}
 <main class="dashboard-main">
   <h1>Player Progression Tracker Dashboard</h1>
+
+  <!-- TEMPORARY - the Game Version changeover notice. It exists to explain a
+       label users never chose, on a field they cannot edit. A few weeks after
+       the deploy everybody has seen it: delete this whole block, and the
+       .version-notice rules in static/styles.css, at that point. -->
+  <div class="version-notice">
+    <h2>About your existing players</h2>
+    <p>
+      Every player you made before this update has been set to
+      <strong>NBA 2K26</strong>. Nothing else about them has changed - the same
+      attributes, badges, points and statistics as before. NBA 2K25 and NBA 2K26
+      use the same badges, so a player you were tracking in NBA 2K25 works
+      exactly the same under this label.
+    </p>
+    <p>
+      A player's game is chosen when you create it and cannot be changed
+      afterwards. To track a player in <strong>NBA 2K27</strong>, use
+      <a href="{{ url_for('add_player') }}">Create a Player</a> and pick NBA 2K27
+      in the Game Version box.
+    </p>
+  </div>
+
   <!-- Dashboard with vertical navigation. -->
   <div>
     <p>
-      Welcome to the NBA 2K26 Player Progression System. Select an option from
-      the menu to get started.
+      Welcome to the NBA 2K Player Progression System. Select an option from the
+      menu to get started.
     </p>
     <!-- Navigation list styled to appear one below the other. -->
     <nav>
