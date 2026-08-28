@@ -16,14 +16,16 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can upgrade attributes a
             <!-- Add a default placeholder option -->
             <option value="" disabled selected>Select a Player</option>
             {% for player_item in players %}
-            <option value="{{ player_item.id }}" {% if player and player_item.id == request.args.get('player_id') %}selected{% endif %}>
-                {{ player_item.name }}
+            <option value="{{ player_item.id }}" {% if player and player_item.id == player.id %}selected{% endif %}>
+                {{ player_item.name }} ({{ version_label(player_item.game_version) }})
             </option>
             {% endfor %}
         </select><br>
 
         {% if player %}
         <h3>{{ player.name }}'s Attributes</h3>
+        <!-- Read-only: a player cannot move between Game Versions. -->
+        <p>Game Version: {{ version_label(player.game_version) }}</p>
         <p>Available Development Points: {{ player.devpoints }}</p>
         <p>Available Badge Points: {{ player.badgepoints }}</p>
         <button id="toggle-view" type="button" onclick="toggleView()">Show Attribute/Badge Targets</button>
@@ -43,57 +45,57 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can upgrade attributes a
             </tr>
             {% for attr in attribute_list %}
             <tr>
-                <td>{{ attr.replace("_", " ").title() }}</td>
+                <td>{{ display_name(attr) }}</td>
 
                 <!-- Dynamically color the attribute value based on its range -->
                 <td>
                     <span
-                        {% if player|getattr(attr) < 71 %}
+                        {% if values[attr] < 71 %}
                             style="color:white;"
-                        {% elif player|getattr(attr) < 81 %}
+                        {% elif values[attr] < 81 %}
                             style="color:#B56459;"
-                        {% elif player|getattr(attr) < 91 %}
+                        {% elif values[attr] < 91 %}
                             style="color:#989898;"
-                        {% elif player|getattr(attr) < 96 %}
+                        {% elif values[attr] < 96 %}
                             style="color:#FDB527;"
                         {% else %}
                             style="color:#A555FB;"
                         {% endif %}
                     >
-                        {{ player|getattr(attr) }}
+                        {{ values[attr] }}
                     </span>
                 </td>
 
                 <!-- Target Value and Delta for Expanded view -->
                 <td class="expanded-view" style="display: none;">
-                    {{ target_values.get(attr, 99) - player|getattr(attr) }}
+                    {{ target_values[attr] - values[attr] }}
                 </td>
 
                 <td class="expanded-view" style="display: none;">
                     <span
-                        {% if target_values.get(attr, 99) < 71 %}
+                        {% if target_values[attr] < 71 %}
                             style="color:white;"
-                        {% elif target_values.get(attr, 99) < 81 %}
+                        {% elif target_values[attr] < 81 %}
                             style="color:#B56459;"
-                        {% elif target_values.get(attr, 99) < 91 %}
+                        {% elif target_values[attr] < 91 %}
                             style="color:#989898;"
-                        {% elif target_values.get(attr, 99) < 96 %}
+                        {% elif target_values[attr] < 96 %}
                             style="color:#FDB527;"
                         {% else %}
                             style="color:#A555FB;"
                         {% endif %}
                     >
-                        {{ target_values.get(attr, 99) }}
+                        {{ target_values[attr] }}
                     </span>
                 </td>
 
                 <!-- Upgrade cost -->
                 <td>
-                    {% if player|getattr(attr) < 70 %}
+                    {% if values[attr] < 70 %}
                     1 devpoint
-                    {% elif player|getattr(attr) < 80 %}
+                    {% elif values[attr] < 80 %}
                     2 devpoints
-                    {% elif player|getattr(attr) < 90 %}
+                    {% elif values[attr] < 90 %}
                     3 devpoints
                     {% else %}
                     5 devpoints
@@ -101,7 +103,7 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can upgrade attributes a
                 </td>
 
                 <td>
-                    {% if player|getattr(attr) < 99 %}
+                    {% if values[attr] < 99 %}
                         <button type="submit" name="attribute" value="{{ attr }}">Upgrade</button>
                     {% else %}
                         <p></p>
@@ -124,66 +126,66 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can upgrade attributes a
             </tr>
             {% for badge in badge_list %}
             <tr>
-                <td>{{ badge.replace("_", " ").title() }}</td>
+                <td>{{ display_name(badge) }}</td>
 
                 <!-- Dynamically colour the badge value based on the level-->
                 <td>
                     <span
-                        {% if player|getattr(badge) == "None" %}
+                        {% if levels[badge] == "None" %}
                             style="color:white;"
-                        {% elif player|getattr(badge) == "Bronze" %}
+                        {% elif levels[badge] == "Bronze" %}
                             style="color:#B56459;"
-                        {% elif player|getattr(badge) == "Silver" %}
+                        {% elif levels[badge] == "Silver" %}
                             style="color:#989898;"
-                        {% elif player|getattr(badge) == "Gold" %}
+                        {% elif levels[badge] == "Gold" %}
                             style="color:#FDB527;"
-                        {% elif target_badges.get(badge) == "Hall of Fame" %}
+                        {% elif levels[badge] == "Hall of Fame" %}
                             style="color:#A555FB;"
                         {% else %}
                             style="color: #FF2938;"
                         {% endif %}
                     >
-                        {{ player|getattr(badge) }}
+                        {{ levels[badge] }}
                     </span>
                 </td>
                 <!-- Target Level and Delta for expanded view -->
                 <td class="expanded-view" style="display: none;">
-                    {{ badge_levels.index(target_badges.get(badge, "Legendary")) - badge_levels.index(player|getattr(badge)) }}
+                    {{ badge_levels.index(target_badges[badge]) - badge_levels.index(levels[badge]) }}
                 </td>
                 <td class="expanded-view" style="display: none;">
                     <span
-                        {% if target_badges.get(badge) == "None" %}
+                        {% if target_badges[badge] == "None" %}
                             style="color:white;"
-                        {% elif target_badges.get(badge) == "Bronze" %}
+                        {% elif target_badges[badge] == "Bronze" %}
                             style="color:#B56459;"
-                        {% elif target_badges.get(badge) == "Silver" %}
+                        {% elif target_badges[badge] == "Silver" %}
                             style="color:#989898;"
-                        {% elif target_badges.get(badge) == "Gold" %}
+                        {% elif target_badges[badge] == "Gold" %}
                             style="color:#FDB527;"
-                        {% elif target_badges.get(badge) == "Hall of Fame" %}
+                        {% elif target_badges[badge] == "Hall of Fame" %}
                             style="color:#A555FB;"
                         {% else %}
                             style="color: #FF2938;"
                         {% endif %}
                     >
-                        {{ target_badges.get(badge, "Legendary") }}
+                        {{ target_badges[badge] }}
                     </span>
                 </td>
                 <td>
-                    {% if player|getattr(badge) == "None" %}
+                    {% if levels[badge] == "None" %}
                     3 devpoints
-                    {% elif player|getattr(badge) == "Bronze" %}
+                    {% elif levels[badge] == "Bronze" %}
                     5 devpoints
-                    {% elif player|getattr(badge) == "Silver" %}
+                    {% elif levels[badge] == "Silver" %}
                     7 devpoints
-                    {% elif player|getattr(badge) == "Gold" %}
+                    {% elif levels[badge] == "Gold" %}
                     10 devpoints
-                    {% elif player|getattr(badge) == "Hall of Fame" %}
+                    {% elif levels[badge] == "Hall of Fame" %}
                     20 devpoints
                     {% endif %}
                 </td>
                 <td>
-                    {% if player|getattr(badge) != "Legendary" %}
+                    {% if levels[badge] != "Legendary" %}
                         <button type="submit" name="badge_devpoints" value="{{ badge }}">DevPoints</button>
                         <button type="submit" name="badge_badgepoints" value="{{ badge }}">Badge Points</button>
                     {% else %}

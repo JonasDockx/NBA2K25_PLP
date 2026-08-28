@@ -12,94 +12,33 @@ from flask_login import login_user, current_user, logout_user, login_required
 from authlib.integrations.flask_client import OAuth
 from werkzeug.security import generate_password_hash
 from app import app, db, bcrypt
-from app.models import User, Player, UserSettings, PlayerTargets
+from app.models import (
+    User,
+    Player,
+    UserSettings,
+    create_rows_for,
+)
+from app.game_versions import (
+    BADGE_LEVELS,
+    DEFAULT_BADGE_LEVEL,
+    DEFAULT_GAME_VERSION,
+    DEFAULT_TARGET_ATTRIBUTE_VALUE,
+    DEFAULT_TARGET_BADGE_LEVEL,
+    MAX_ATTRIBUTE_VALUE,
+    MIN_ATTRIBUTE_VALUE,
+    all_versions,
+    attribute_upgrade_cost,
+    attributes_for,
+    badge_upgrade_cost,
+    badges_for,
+    display_name,
+    is_valid_version,
+    next_badge_level,
+    version_label,
+)
 from utils.mailer import send_email
 from utils.tokens import generate_confirmation_token, confirm_token
 from utils.scrape_2kratings import scrape_player_data
-
-ATTRIBUTE_LIST = [
-    "agility",
-    "ball_handle",
-    "block",
-    "close_shot",
-    "defensive_consistency",
-    "defensive_rebound",
-    "draw_foul",
-    "driving_dunk",
-    "free_throw",
-    "hands",
-    "help_defense_iq",
-    "hustle",
-    "intangibles",
-    "interior_defense",
-    "layup",
-    "mid_range_shot",
-    "offensive_consistency",
-    "offensive_rebound",
-    "overall_durability",
-    "pass_accuracy",
-    "pass_iq",
-    "pass_perception",
-    "pass_vision",
-    "perimeter_defense",
-    "post_control",
-    "post_fade",
-    "post_hook",
-    "shot_iq",
-    "speed",
-    "speed_with_ball",
-    "stamina",
-    "standing_dunk",
-    "steal",
-    "strength",
-    "three_point_shot",
-    "vertical",
-]
-
-BADGE_LIST = [
-    "aerial_wizard",
-    "ankle_assassin",
-    "bail_out",
-    "boxout_beast",
-    "break_starter",
-    "brick_wall",
-    "challenger", 
-    "deadeye",
-    "dimer",
-    "float_game",
-    "glove",
-    "handles_for_days",
-    "high_flying_denier",
-    "hook_specialist", 
-    "immovable_enforcer",
-    "interceptor",
-    "layup_mixmaster",
-    "lightning_launch",
-    "limitless_range", 
-    "mini_marksman",
-    "off_ball_pest",
-    "on_ball_menace",
-    "paint_patroller",
-    "paint_prodigy",
-    "pick_dodger", 
-    "pogo_stick",
-    "posterizer",
-    "post_fade_phenom",
-    "post_lockdown",
-    "post_powerhouse",
-    "post_up_poet", 
-    "physical_finisher",
-    "rebound_chaser",
-    "rise_up",
-    "set_shot_specialist",
-    "shifty_shooter",
-    "slippery_off_ball", 
-    "strong_handle",
-    "unpluckable",
-    "versatile_visionary",
-]
-
-BADGE_LEVELS = ["None", "Bronze", "Silver", "Gold", "Hall of Fame", "Legendary"]
 
 # Initialize OAuth
 oauth = OAuth(app)
@@ -123,6 +62,50 @@ def get_owned_player(player_id):
     if player.user_id != current_user.id:
         abort(403)
     return player
+
+def rows_for(player):
+    """
+    The player's attribute and badge rows, keyed by attribute_key / badge_key.
+
+    Every row exists from the moment the player is created (see
+    models.create_rows_for), and only for the keys the player's own Game
+    Version has. So a lookup that misses is not "no row yet" - it means the
+    key does not belong to this player at all, which is exactly what the
+    routes below reject.
+    """
+    attributes = {row.attribute_key: row for row in player.attributes}
+    badges = {row.badge_key: row for row in player.badges}
+    return attributes, badges
+
+
+def whole_number(raw, default):
+    """`raw` as an int, or `default` if it is missing or not a number."""
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return default
+
+
+def version_choices():
+    """(key, label) pairs for the create-player dropdown, oldest first."""
+    return [(version, version_label(version)) for version in all_versions()]
+
+
+def badge_version_map():
+    """
+    Every badge key that exists in any Game Version, mapped to the versions it
+    belongs to.
+
+    The create-player form renders all of them and hides the ones that do not
+    apply to the version picked in the dropdown, so it needs to know which is
+    which. Only the form uses this - the routes never trust it, they check
+    against the player's own rows.
+    """
+    keys = sorted({key for version in all_versions() for key in badges_for(version)})
+    return {
+        key: [version for version in all_versions() if key in badges_for(version)]
+        for key in keys
+    }
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -208,182 +191,87 @@ def dashboard():
 def add_player():
     """
     Adding a player to the database.
+
+    The 40 form reads and 40 constructor arguments this route used to carry are
+    gone. What exists for a player now comes from its Game Version, so the
+    loops below are the same code whether that version has 40 badges or 53.
     """
     if request.method == "POST":
-        name = request.form.get("name")
-        user_id = current_user.id
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            flash("Player name cannot be empty.", "danger")
+            return redirect(url_for("add_player"))
 
-        devpoints = int(request.form.get("devpoints", 0))
-        badgepoints = int(request.form.get("badgepoints", 0))
+        # The Game Version decides which keys are legal for every loop below,
+        # so it is validated before anything else. It is a form value and
+        # therefore hostile: Player.validate_game_version would refuse a bad
+        # one too, but as a 500 rather than as something a user can read.
+        version = request.form.get("game_version")
+        if not is_valid_version(version):
+            flash("Please choose a Game Version for this player.", "danger")
+            return redirect(url_for("add_player"))
 
-        agility = int(request.form.get("agility", 25))
-        ball_handle = int(request.form.get("ball_handle", 25))
-        block = int(request.form.get("block", 25))
-        close_shot = int(request.form.get("close_shot", 25))
-        defensive_consistency = int(request.form.get("defensive_consistency", 25))
-        defensive_rebound = int(request.form.get("defensive_rebound", 25))
-        draw_foul = int(request.form.get("draw_foul", 25))
-        driving_dunk = int(request.form.get("driving_dunk", 25))
-        free_throw = int(request.form.get("free_throw", 25))
-        hands = int(request.form.get("hands", 25))
-        help_defense_iq = int(request.form.get("help_defense_iq", 25))
-        hustle = int(request.form.get("hustle", 25))
-        intangibles = int(request.form.get("intangibles", 25))
-        interior_defense = int(request.form.get("interior_defense", 25))
-        layup = int(request.form.get("layup", 25))
-        mid_range_shot = int(request.form.get("mid_range_shot", 25))
-        offensive_consistency = int(request.form.get("offensive_consistency", 25))
-        offensive_rebound = int(request.form.get("offensive_rebound", 25))
-        overall_durability = int(request.form.get("overall_durability", 25))
-        pass_accuracy = int(request.form.get("pass_accuracy", 25))
-        pass_iq = int(request.form.get("pass_iq", 25))
-        pass_perception = int(request.form.get("pass_perception", 25))
-        pass_vision = int(request.form.get("pass_vision", 25))
-        perimeter_defense = int(request.form.get("perimeter_defense", 25))
-        post_control = int(request.form.get("post_control", 25))
-        post_fade = int(request.form.get("post_fade", 25))
-        post_hook = int(request.form.get("post_hook", 25))
-        shot_iq = int(request.form.get("shot_iq", 25))
-        standing_dunk = int(request.form.get("standing_dunk", 25))
-        speed = int(request.form.get("speed", 25))
-        speed_with_ball = int(request.form.get("speed_with_ball", 25))
-        stamina = int(request.form.get("stamina", 25))
-        steal = int(request.form.get("steal", 25))
-        strength = int(request.form.get("strength", 25))
-        three_point_shot = int(request.form.get("three_point_shot", 25))
-        vertical = int(request.form.get("vertical", 25))
-
-        aerial_wizard = request.form.get("aerial_wizard", "None")
-        ankle_assassin = request.form.get("ankle_assassin", "None")
-        bail_out = request.form.get("bail_out", "None")
-        boxout_beast = request.form.get("boxout_beast", "None")
-        break_starter = request.form.get("break_starter", "None")
-        brick_wall = request.form.get("brick_wall", "None")
-        challenger = request.form.get("challenger", "None")
-        deadeye = request.form.get("deadeye", "None")
-        dimer = request.form.get("dimer", "None")
-        float_game = request.form.get("float_game", "None")
-        glove = request.form.get("glove", "None")
-        handles_for_days = request.form.get("handles_for_days", "None")
-        high_flying_denier = request.form.get("high_flying_denier", "None")
-        hook_specialist = request.form.get("hook_specialist", "None")
-        immovable_enforcer = request.form.get("immovable_enforcer", "None")
-        interceptor = request.form.get("interceptor", "None")
-        layup_mixmaster = request.form.get("layup_mixmaster", "None")
-        lightning_launch = request.form.get("lightning_launch", "None")
-        limitless_range = request.form.get("limitless_range", "None")
-        mini_marksman = request.form.get("mini_marksman", "None")
-        off_ball_pest = request.form.get("off_ball_pest", "None")
-        on_ball_menace = request.form.get("on_ball_menace", "None")
-        paint_patroller = request.form.get("paint_patroller", "None")
-        paint_prodigy = request.form.get("paint_prodigy", "None")
-        pick_dodger = request.form.get("pick_dodger", "None")
-        pogo_stick = request.form.get("pogo_stick", "None")
-        posterizer = request.form.get("posterizer", "None")
-        post_fade_phenom = request.form.get("post_fade_phenom", "None")
-        post_lockdown = request.form.get("post_lockdown", "None")
-        post_powerhouse = request.form.get("post_powerhouse", "None")
-        post_up_poet = request.form.get("post_up_poet", "None")
-        physical_finisher = request.form.get("physical_finisher", "None")
-        rebound_chaser = request.form.get("rebound_chaser", "None")
-        rise_up = request.form.get("rise_up", "None")
-        set_shot_specialist = request.form.get("set_shot_specialist", "None")
-        shifty_shooter = request.form.get("shifty_shooter", "None")
-        slippery_off_ball = request.form.get("slippery_off_ball", "None")
-        strong_handle = request.form.get("strong_handle", "None")
-        unpluckable = request.form.get("unpluckable", "None")
-        versatile_visionary = request.form.get("versatile_visionary", "None")
-
-        new_player = Player(
+        player = Player(
             name=name,
-            user_id=user_id,
-            devpoints=devpoints,
-            badgepoints=badgepoints,
-            agility=agility,
-            ball_handle=ball_handle,
-            block=block,
-            close_shot=close_shot,
-            defensive_consistency=defensive_consistency,
-            defensive_rebound=defensive_rebound,
-            draw_foul=draw_foul,
-            driving_dunk=driving_dunk,
-            free_throw=free_throw,
-            hands=hands,
-            help_defense_iq=help_defense_iq,
-            hustle=hustle,
-            intangibles=intangibles,
-            interior_defense=interior_defense,
-            layup=layup,
-            mid_range_shot=mid_range_shot,
-            offensive_consistency=offensive_consistency,
-            offensive_rebound=offensive_rebound,
-            overall_durability=overall_durability,
-            pass_accuracy=pass_accuracy,
-            pass_iq=pass_iq,
-            pass_perception=pass_perception,
-            pass_vision=pass_vision,
-            perimeter_defense=perimeter_defense,
-            post_control=post_control,
-            post_fade=post_fade,
-            post_hook=post_hook,
-            shot_iq=shot_iq,
-            standing_dunk=standing_dunk,
-            speed=speed,
-            speed_with_ball=speed_with_ball,
-            stamina=stamina,
-            steal=steal,
-            strength=strength,
-            three_point_shot=three_point_shot,
-            vertical=vertical,
-            aerial_wizard=aerial_wizard,
-            ankle_assassin=ankle_assassin,
-            bail_out=bail_out,
-            boxout_beast=boxout_beast,
-            break_starter=break_starter,
-            brick_wall=brick_wall,
-            challenger=challenger,
-            deadeye=deadeye,
-            dimer=dimer,
-            float_game=float_game,
-            glove=glove,
-            handles_for_days=handles_for_days,
-            high_flying_denier=high_flying_denier,
-            hook_specialist=hook_specialist,
-            immovable_enforcer=immovable_enforcer,
-            interceptor=interceptor,
-            layup_mixmaster=layup_mixmaster,
-            lightning_launch=lightning_launch,
-            limitless_range=limitless_range,
-            mini_marksman=mini_marksman,
-            off_ball_pest=off_ball_pest,
-            on_ball_menace=on_ball_menace,
-            paint_patroller=paint_patroller,
-            paint_prodigy=paint_prodigy,
-            pick_dodger=pick_dodger,
-            pogo_stick=pogo_stick,
-            posterizer=posterizer,
-            post_fade_phenom=post_fade_phenom,
-            post_lockdown=post_lockdown,
-            post_powerhouse=post_powerhouse,
-            post_up_poet=post_up_poet,
-            physical_finisher=physical_finisher,
-            rebound_chaser=rebound_chaser,
-            rise_up=rise_up,
-            set_shot_specialist=set_shot_specialist,
-            shifty_shooter=shifty_shooter,
-            slippery_off_ball=slippery_off_ball,
-            strong_handle=strong_handle,
-            unpluckable=unpluckable,
-            versatile_visionary=versatile_visionary
+            user_id=current_user.id,
+            game_version=version,
+            devpoints=whole_number(request.form.get("devpoints"), 0),
+            badgepoints=whole_number(request.form.get("badgepoints"), 0),
         )
+        create_rows_for(player)
+        db.session.add(player)
 
-        db.session.add(new_player)
+        # create_rows_for has already given the player a full set of rows at
+        # the defaults, so a field left blank keeps its default rather than
+        # needing a fallback spelled out here. Anything the form sends for a
+        # key this version does not have is ignored: the loops walk the
+        # player's own rows, never the submitted field names.
+        attributes, badges = rows_for(player)
+
+        for key, row in attributes.items():
+            raw = request.form.get(key)
+            if raw is None or raw == "":
+                continue
+            value = whole_number(raw, None)
+            if value is None:
+                db.session.rollback()
+                flash(f"{display_name(key)} must be a number.", "danger")
+                return redirect(url_for("add_player"))
+            if value < MIN_ATTRIBUTE_VALUE or value > MAX_ATTRIBUTE_VALUE:
+                db.session.rollback()
+                flash(
+                    f"{display_name(key)} must be between {MIN_ATTRIBUTE_VALUE} "
+                    f"and {MAX_ATTRIBUTE_VALUE}.",
+                    "danger",
+                )
+                return redirect(url_for("add_player"))
+            row.value = value
+
+        for key, row in badges.items():
+            level = request.form.get(key, DEFAULT_BADGE_LEVEL)
+            if level not in BADGE_LEVELS:
+                db.session.rollback()
+                flash(f"Invalid level for {display_name(key)}.", "danger")
+                return redirect(url_for("add_player"))
+            row.level = level
+
         db.session.commit()
 
         flash("Player added successfully!", "success")
         return redirect(url_for("add_player"))
-    # Render the form when accessed via GET request
-    return render_template("add_player.html")
+
+    # Render the form when accessed via GET request. Attributes are the same in
+    # every Game Version, so one list serves the whole form; badges are not,
+    # so all of them are rendered and the form hides the ones that do not
+    # apply to the version picked.
+    return render_template(
+        "add_player.html",
+        versions=version_choices(),
+        attribute_list=attributes_for(DEFAULT_GAME_VERSION),
+        badge_versions=badge_version_map(),
+        badge_levels=BADGE_LEVELS,
+        display_name=display_name,
+    )
 
 @app.route("/input_stats", methods=["GET", "POST"])
 @login_required
@@ -522,165 +410,137 @@ def input_stats():
 def upgrade_attribute():
     """
     The logic for upgrading the attributes.
+
+    The economy itself is unchanged - costs are identical in every Game
+    Version. What changed is where values are read and written: rows looked up
+    once into a dict, instead of 76 getattr calls against the player.
     """
-
-    attribute_list = ATTRIBUTE_LIST
-
-    badge_list = BADGE_LIST
-
-    badge_levels = BADGE_LEVELS
-
-    player = None
-    target_values = {}
-    target_badges = {}
-
     if request.method == "POST":
-        # Fetch the player
         player_id = request.form.get("player_id")
+        if not player_id:
+            return redirect(url_for("upgrade_attribute"))
 
-        if player_id:
-            player = get_owned_player(player_id)
+        player = get_owned_player(player_id)
+        attributes, badges = rows_for(player)
 
-            if player:
-                targets = PlayerTargets.query.filter_by(player_id=player.id).first()
+        # Upgrade an attribute with devpoints.
+        attribute = request.form.get("attribute")
+        if attribute:
+            row = attributes.get(attribute)
+            if row is None:
+                flash("That attribute does not exist for this player.", "danger")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-                if targets:
-                    target_values = {attr: getattr(targets, attr, 99) for attr in attribute_list}
-                    target_badges = {badge: getattr(targets, badge, "Legendary") for badge in badge_list}
-                else:
-                    target_values = {attr: 99 for attr in attribute_list}
-                    target_badges = {badge: "Legendary" for badge in badge_list}
+            if row.value >= MAX_ATTRIBUTE_VALUE:
+                flash(f"{display_name(attribute)} is already at the maximum value!", "info")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-            # Get the attribute to upgrade and its current value
-            attribute = request.form.get("attribute")
-            if attribute and player:
-                current_value = getattr(player, attribute)
+            cost = attribute_upgrade_cost(row.value)
+            if player.devpoints >= cost:
+                player.devpoints -= cost
+                row.value += 1
+                db.session.commit()
+                flash(
+                    f"Success! {display_name(attribute)} upgraded to {row.value}. "
+                    f"{cost} devpoints used.",
+                    "success"
+                )
+            else:
+                flash("Not enough development points to upgrade this attribute.", "danger")
 
-                # Check if the attribute is at the maximum value
-                if current_value >= 99:
-                    formatted_name = format_attribute_name(attribute)
-                    flash(f"{formatted_name} is already at the maximum value!", "info")
-                    return redirect(url_for("upgrade_attribute", player_id=player_id))
+        # Upgrade a badge with devpoints. The key is checked against the
+        # player's own badge rows, so a hand-crafted POST cannot upgrade a
+        # badge that does not exist in this player's Game Version.
+        badge_devpoints = request.form.get("badge_devpoints")
+        if badge_devpoints:
+            row = badges.get(badge_devpoints)
+            if row is None:
+                flash("That badge does not exist for this player's Game Version.", "danger")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-                # Define upgrade cost based on the current value
-                if current_value < 70:
-                    cost = 1
-                elif current_value < 80:
-                    cost = 2
-                elif current_value < 90:
-                    cost = 3
-                else:
-                    cost = 5
+            next_level = next_badge_level(row.level)
+            if next_level is None:
+                flash(f"{display_name(badge_devpoints)} is already at the maximum level.", "info")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-                # Check if player has enough development points
-                if player.devpoints >= cost:
-                    # Deduct development points and increase the attribute
-                    player.devpoints -= cost
-                    setattr(player, attribute, current_value + 1)
+            badge_cost = badge_upgrade_cost(row.level)
+            if player.devpoints >= badge_cost:
+                player.devpoints -= badge_cost
+                row.level = next_level
+                db.session.commit()
+                flash(
+                    f"Success! {display_name(badge_devpoints)} upgraded to {next_level}. "
+                    f"{badge_cost} devpoints used.",
+                    "success"
+                )
+            else:
+                flash("Not enough development points to upgrade this badge.", "danger")
 
-                    db.session.commit()
-                    formatted_name = format_attribute_name(attribute)
-                    flash(
-                        f"Success! {formatted_name} upgraded to {current_value + 1}. {cost} devpoints used.",
-                        "success"
-                    )
-                else:
-                    flash("Not enough development points to upgrade this attribute.", "danger")
+        # Upgrade a badge with a badge point - one point, any level.
+        badge_badgepoints = request.form.get("badge_badgepoints")
+        if badge_badgepoints:
+            row = badges.get(badge_badgepoints)
+            if row is None:
+                flash("That badge does not exist for this player's Game Version.", "danger")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-            # Handle badge upgrades with devpoints
-            badge_devpoints = request.form.get("badge_devpoints")
-            if badge_devpoints and player:
-                current_badge = getattr(player, badge_devpoints)
+            next_level = next_badge_level(row.level)
+            if next_level is None:
+                flash(f"{display_name(badge_badgepoints)} is already at the maximum level.", "info")
+                return redirect(url_for("upgrade_attribute", player_id=player.id))
 
-                # Prevent upgrade if badge is at "Legendary"
-                if current_badge == "Legendary":
-                    flash(f"{badge_devpoints} is already at the maximum level.", "info")
-                    return redirect(url_for("upgrade_attribute", player_id=player_id))
+            if player.badgepoints > 0:
+                row.level = next_level
+                player.badgepoints -= 1
+                db.session.commit()
+                flash(
+                    f"Success! {display_name(badge_badgepoints)} upgraded to "
+                    f"{next_level} with 1 badge point.",
+                    "success"
+                )
+            else:
+                flash("Not enough points to upgrade this badge.", "danger")
 
-                badge_cost = 0
-
-                # Define badge upgrade cost based on the current badge level
-                if current_badge == "None":
-                    badge_cost = 3
-                elif current_badge == "Bronze":
-                    badge_cost = 5
-                elif current_badge == "Silver":
-                    badge_cost = 7
-                elif current_badge == "Gold":
-                    badge_cost = 10
-                elif current_badge == "Hall of Fame":
-                    badge_cost = 20
-
-                if player.devpoints >= badge_cost:
-                    player.devpoints -= badge_cost
-                    next_badge = get_next_badge_level(current_badge)
-                    setattr(player, badge_devpoints, next_badge)
-
-                    db.session.commit()
-                    formatted_badge_name = format_attribute_name(badge_devpoints)
-                    flash(
-                        f"Success! {formatted_badge_name} upgraded to {next_badge}. {badge_cost} devpoints used.",
-                        "success"
-                    )
-                else:
-                    flash("Not enough development points to upgrade this badge.", "danger",)
-
-            # Handle badge upgrades with badge points
-            badge_badgepoints = request.form.get("badge_badgepoints")
-            if badge_badgepoints and player:
-                if player.badgepoints > 0:
-                    current_badge = getattr(player, badge_badgepoints)
-                    next_badge = get_next_badge_level(current_badge)
-                    setattr(player, badge_badgepoints, next_badge)
-                    player.badgepoints -= 1
-                    db.session.commit()
-                    formatted_badge_name = format_attribute_name(badge_badgepoints)
-                    flash(
-                        f"Success! {formatted_badge_name} upgraded to {next_badge} with 1 badge point.",
-                        "success"
-                    )
-                else:
-                    flash("Not enough points to upgrade this badge.", "danger")
-
-        return redirect(url_for("upgrade_attribute", player_id=player_id))
+        return redirect(url_for("upgrade_attribute", player_id=player.id))
 
     # Handle GET request: display the player and attributes
     player = None
-    if "player_id" in request.args:
-        player_id = request.args.get("player_id")
-        player = get_owned_player(player_id)
+    attribute_list = []
+    badge_list = []
+    values = {}
+    target_values = {}
+    levels = {}
+    target_badges = {}
 
-        if player:
-            targets = PlayerTargets.query.filter_by(player_id=player_id).first()
-            if targets:
-                target_values = {attr: getattr(targets, attr, 99) for attr in attribute_list}
-                target_badges = {badge: getattr(targets, badge, "Legendary") for badge in badge_list}
+    if "player_id" in request.args:
+        player = get_owned_player(request.args.get("player_id"))
+        attributes, badges = rows_for(player)
+        # Driven by the player's own Game Version, so a 2K26 player is never
+        # offered a 2K27 badge and vice versa.
+        attribute_list = attributes_for(player.game_version)
+        badge_list = badges_for(player.game_version)
+        values = {key: row.value for key, row in attributes.items()}
+        target_values = {key: row.target_value for key, row in attributes.items()}
+        levels = {key: row.level for key, row in badges.items()}
+        target_badges = {key: row.target_level for key, row in badges.items()}
 
     # Fetch only the players created by the logged-in user
     players = Player.query.filter_by(user_id=current_user.id).all()
 
     return render_template(
-        "upgrade_attribute.html", 
+        "upgrade_attribute.html",
         players=players,
         player=player,
+        values=values,
         target_values=target_values,
+        levels=levels,
         target_badges=target_badges,
         attribute_list=attribute_list,
         badge_list=badge_list,
-        badge_levels=badge_levels,
+        badge_levels=BADGE_LEVELS,
+        display_name=display_name,
+        version_label=version_label,
     )
-
-# Helper function to determine next badge level
-def get_next_badge_level(current_badge):
-    """
-    Helper function to determine next badge level.
-    """
-    badge_levels = ["None", "Bronze", "Silver", "Gold", "Hall of Fame", "Legendary"]
-    if current_badge in badge_levels:
-        next_level_index = badge_levels.index(current_badge) + 1
-        if next_level_index < len(badge_levels):
-            return badge_levels[next_level_index]
-    return current_badge
 
 @app.route("/")
 def home():
@@ -911,60 +771,95 @@ def settings():
 def target_settings():
     """
     Handle target value settings for players.
+
+    Targets used to live in PlayerTargets, a second wide table repeating all 76
+    columns. They are now target_value / target_level on the same row as the
+    value they are aimed at, so this route mostly got shorter.
     """
     players = Player.query.filter_by(user_id=current_user.id).all()
     selected_player = None
+    attribute_list = []
+    badge_list = []
     target_values = {}
     target_badges = {}
-    attribute_list = ATTRIBUTE_LIST
-    badge_list = BADGE_LIST
 
     if request.method == "POST":
         player_id = request.form.get("player_id")
         if player_id:
             selected_player = get_owned_player(player_id)
-
-            targets = PlayerTargets.query.filter_by(player_id=player_id).first()
-
-            if targets:
-                target_values = {attr: getattr(targets, attr, 99) for attr in attribute_list}
-                target_badges = {badge: getattr(targets, badge, "Legendary") for badge in badge_list}
-            else:
-                target_values = {attr: 99 for attr in attribute_list}
-                target_badges = {badge: "Legendary" for badge in badge_list}
+            attributes, badges = rows_for(selected_player)
+            attribute_list = attributes_for(selected_player.game_version)
+            badge_list = badges_for(selected_player.game_version)
+            target_values = {key: row.target_value for key, row in attributes.items()}
+            target_badges = {key: row.target_level for key, row in badges.items()}
 
             if "scrape_player" in request.form:
                 player_url_part = request.form.get("player_url_part")
                 if player_url_part:
                     scraped_data = scrape_player_data(player_url_part)
                     if "error" not in scraped_data:
-                        target_values.update(scraped_data.get("attributes", target_values))
-                        # target_badges.update(scraped_data.get("badges", target_badges))
-                        for badge in badge_list:
-                            target_badges[badge] = scraped_data.get("badges", {}).get(badge, "None")
+                        # Only keys this player's Game Version has are filled
+                        # in. 2Kratings serves one game's ratings and does not
+                        # know which version this player is being tracked in.
+                        scraped_attributes = scraped_data.get("attributes", {})
+                        for key in attribute_list:
+                            if key in scraped_attributes:
+                                target_values[key] = scraped_attributes[key]
+
+                        scraped_badges = scraped_data.get("badges", {})
+                        for key in badge_list:
+                            target_badges[key] = scraped_badges.get(key, DEFAULT_BADGE_LEVEL)
+
                         flash("Player data scraped successfully!", "success")
                     else:
                         flash(scraped_data["error"], "danger")
-            elif "save_targets" in request.form and selected_player:
-                targets = PlayerTargets.query.filter_by(player_id=selected_player.id).first()
 
-                if not targets:
-                    targets = PlayerTargets(player_id=selected_player.id)
-                    db.session.add(targets)
-                for attr in attribute_list:
-                    setattr(targets, attr, int(request.form.get(f"target_{attr}", 99)))
+            elif "save_targets" in request.form:
+                # Validate everything before writing anything, so a bad value
+                # at the bottom of the form cannot leave the top half saved.
+                new_values = {}
+                for key in attribute_list:
+                    raw = request.form.get(f"target_{key}", DEFAULT_TARGET_ATTRIBUTE_VALUE)
+                    value = whole_number(raw, None)
+                    if value is None:
+                        flash(f"Target for {display_name(key)} must be a number.", "danger")
+                        return redirect(url_for("target_settings", player_id=selected_player.id))
+                    if value < MIN_ATTRIBUTE_VALUE or value > MAX_ATTRIBUTE_VALUE:
+                        flash(
+                            f"Target for {display_name(key)} must be between "
+                            f"{MIN_ATTRIBUTE_VALUE} and {MAX_ATTRIBUTE_VALUE}.",
+                            "danger",
+                        )
+                        return redirect(url_for("target_settings", player_id=selected_player.id))
+                    new_values[key] = value
 
-                for badge in badge_list:
-                    setattr(targets, badge, request.form.get(f"target_{badge}", "Legendary"))
+                new_levels = {}
+                for key in badge_list:
+                    level = request.form.get(f"target_{key}", DEFAULT_TARGET_BADGE_LEVEL)
+                    if level not in BADGE_LEVELS:
+                        flash(f"Invalid target level for {display_name(key)}.", "danger")
+                        return redirect(url_for("target_settings", player_id=selected_player.id))
+                    new_levels[key] = level
 
-                if not targets:
-                    targets = PlayerTargets(player_id=player_id)
-                    db.session.add(targets)
+                for key, value in new_values.items():
+                    attributes[key].target_value = value
+                for key, level in new_levels.items():
+                    badges[key].target_level = level
 
                 db.session.commit()
                 flash("Target values saved successfully!", "success")
 
-                return redirect(url_for('target_settings', player_id=selected_player.id))
+                return redirect(url_for("target_settings", player_id=selected_player.id))
+
+    elif "player_id" in request.args:
+        # The save above redirects back here with the player in the URL, so the
+        # GET has to fill the form in or the user lands on an empty page.
+        selected_player = get_owned_player(request.args.get("player_id"))
+        attributes, badges = rows_for(selected_player)
+        attribute_list = attributes_for(selected_player.game_version)
+        badge_list = badges_for(selected_player.game_version)
+        target_values = {key: row.target_value for key, row in attributes.items()}
+        target_badges = {key: row.target_level for key, row in badges.items()}
 
     return render_template(
         "target_settings.html",
@@ -974,7 +869,9 @@ def target_settings():
         target_badges=target_badges,
         attribute_list=attribute_list,
         badge_list=badge_list,
-        getattr=getattr
+        badge_levels=BADGE_LEVELS,
+        display_name=display_name,
+        version_label=version_label,
     )
 
 @app.route("/point_system", methods=["GET", "POST"])
@@ -1222,71 +1119,88 @@ def manual():
     """
     return render_template("manual.html")
 
-def format_attribute_name(attribute):
-    """Converts snake_case attribute names to Title Case with spaces."""
-    return attribute.replace('_', ' ').title()
-
 @app.route("/edit_player", methods=["GET", "POST"])
 @login_required
 def edit_player():
     """
     Allows the user to edit a player's name, attributes and badges in case
     of an error at player creation.
+
+    This is the Correction tool: it writes values straight in, outside the
+    points economy, exactly as before. See
+    docs/adr/0001-correction-tool-bypasses-points-economy.md.
     """
-    attribute_list = ATTRIBUTE_LIST
-    badge_list = BADGE_LIST
     players = Player.query.filter_by(user_id=current_user.id).all()
 
     if request.method == "POST":
         player = get_owned_player(request.form.get("player_id"))
+        attributes, badges = rows_for(player)
 
-        # Validate everything before writing anything
+        # Validate everything before writing anything, so a bad value at the
+        # bottom of the form cannot leave the top half saved.
         name = (request.form.get("name") or "").strip()
         if not name:
             flash("Player name cannot be empty.", "danger")
             return redirect(url_for("edit_player", player_id=player.id))
 
-        new_attrs = {}
-        for attr in attribute_list:
-            raw = request.form.get(attr)
-            try:
-                val = int(raw)
-            except (TypeError, ValueError):
-                flash(f"{format_attribute_name(attr)} must be a number.", "danger")
+        new_values = {}
+        for key in attributes:
+            value = whole_number(request.form.get(key), None)
+            if value is None:
+                flash(f"{display_name(key)} must be a number.", "danger")
                 return redirect(url_for("edit_player", player_id=player.id))
-            if val < 25 or val > 99:
-                flash(f"{format_attribute_name(attr)} must be between 25 and 99.", "danger")
+            if value < MIN_ATTRIBUTE_VALUE or value > MAX_ATTRIBUTE_VALUE:
+                flash(
+                    f"{display_name(key)} must be between {MIN_ATTRIBUTE_VALUE} "
+                    f"and {MAX_ATTRIBUTE_VALUE}.",
+                    "danger",
+                )
                 return redirect(url_for("edit_player", player_id=player.id))
-            new_attrs[attr] = val
+            new_values[key] = value
 
-            new_badges = {}
-            for badge in badge_list:
-                level = request.form.get(badge, "None")
-                if level not in BADGE_LEVELS:
-                    flash(f"Invalid level for {format_attribute_name(badge)}.", "danger")
-                    return redirect(url_for("edit_player", player_id=player.id))
-                new_badges[badge] = level
+        new_levels = {}
+        for key in badges:
+            level = request.form.get(key, DEFAULT_BADGE_LEVEL)
+            if level not in BADGE_LEVELS:
+                flash(f"Invalid level for {display_name(key)}.", "danger")
+                return redirect(url_for("edit_player", player_id=player.id))
+            new_levels[key] = level
 
-            player.name = name
-            for attr, val in new_attrs.items():
-                setattr(player, attr, val)
-            for badge, level in new_badges.items():
-                setattr(player, badge, level)
-            db.session.commit()
+        player.name = name
+        for key, value in new_values.items():
+            attributes[key].value = value
+        for key, level in new_levels.items():
+            badges[key].level = level
+        db.session.commit()
 
-            flash("Player updated successfully.", "success")
-            return redirect(url_for("edit_player", player_id=player.id))
+        flash("Player updated successfully.", "success")
+        return redirect(url_for("edit_player", player_id=player.id))
 
     # GET
     player = None
+    attribute_list = []
+    badge_list = []
+    values = {}
+    levels = {}
+
     if "player_id" in request.args:
         player = get_owned_player(request.args.get("player_id"))
+        attributes, badges = rows_for(player)
+        # Only the badges of this player's own Game Version are offered.
+        attribute_list = attributes_for(player.game_version)
+        badge_list = badges_for(player.game_version)
+        values = {key: row.value for key, row in attributes.items()}
+        levels = {key: row.level for key, row in badges.items()}
 
     return render_template(
         "edit_player.html",
         players=players,
         player=player,
+        values=values,
+        levels=levels,
         attribute_list=attribute_list,
         badge_list=badge_list,
         badge_levels=BADGE_LEVELS,
+        display_name=display_name,
+        version_label=version_label,
     )

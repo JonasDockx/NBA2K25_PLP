@@ -6,21 +6,21 @@ content %}
   {% if players %}
   <!-- Player picker: GET so the selection lands in the URL (PRG-friendly) -->
   <label for="player_id">Select Player:</label>
-  <select
-    id="player_id"
-    onchange="if (this.value) window.location.href='{{ url_for('edit_player') }}?player_id=' + this.value;"
-  >
+  <select id="player_id" data-edit-url="{{ url_for('edit_player') }}">
     <option value="" disabled {% if not player %}selected{% endif %}>
       Select a Player
     </option>
     {% for p in players %}
-    <option value="{{ p.id }}" {% if player and p.id == player.id %}selected{% endif %}>{{ p.name }}</option>
+    <option value="{{ p.id }}" {% if player and p.id == player.id %}selected{% endif %}>{{ p.name }} ({{ version_label(p.game_version) }})</option>
     {% endfor %}
   </select>
 
   {% if player %}
   <form method="POST" action="{{ url_for('edit_player') }}">
     <input type="hidden" name="player_id" value="{{ player.id }}" />
+
+    <!-- Read-only: a player cannot move between Game Versions. -->
+    <p>Game Version: {{ version_label(player.game_version) }}</p>
 
     <label for="name">Name:</label>
     <input
@@ -33,22 +33,22 @@ content %}
 
     <h4>Attributes</h4>
     {% for attr in attribute_list %}
-    <label>{{ attr.replace("_", " ").title() }}:</label>
+    <label>{{ display_name(attr) }}:</label>
     <input
       type="number"
       name="{{ attr }}"
       min="25"
       max="99"
-      value="{{ player|getattr(attr) }}"
+      value="{{ values[attr] }}"
     /><br />
     {% endfor %}
 
     <h4>Badges</h4>
     {% for badge in badge_list %}
-    <label>{{ badge.replace("_", " ").title() }}:</label>
+    <label>{{ display_name(badge) }}:</label>
     <select name="{{ badge }}">
       {% for level in badge_levels %}
-      <option value="{{ level }}" {% if player|getattr(badge) == level %}selected{% endif %}>{{ level }}</option>
+      <option value="{{ level }}" {% if levels[badge] == level %}selected{% endif %}>{{ level }}</option>
       {% endfor %}</select
     ><br />
     {% endfor %}
@@ -77,4 +77,23 @@ content %}
 
   <a href="{{ url_for('dashboard') }}" class="button">Back to Dashboard</a>
 </main>
+
+<script>
+  // Jumping to the picked player. This lives here rather than in an inline
+  // onchange because the URL comes from Jinja, and a Jinja expression nested
+  // inside a quoted JS string inside a quoted HTML attribute is something no
+  // editor can parse - it renders fine but reads as a syntax error. The URL
+  // rides in on a data- attribute instead, where it is just text.
+  (function () {
+    var picker = document.getElementById('player_id');
+    if (!picker) {
+      return;
+    }
+    picker.addEventListener('change', function () {
+      if (this.value) {
+        window.location.href = this.dataset.editUrl + '?player_id=' + this.value;
+      }
+    });
+  })();
+</script>
 {% endblock %}

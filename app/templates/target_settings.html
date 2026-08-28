@@ -17,7 +17,7 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can try to emulate some 
             <option value="" disabled {% if not selected_player %}selected{% endif %}>Select a Player</option>
             {% for player in players %}
             <option value="{{ player.id }}" {% if selected_player and player.id == selected_player.id %}selected{% endif %}>
-                {{ player.name }}
+                {{ player.name }} ({{ version_label(player.game_version) }})
             </option>
             {% endfor %}
         </select>
@@ -41,27 +41,26 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can try to emulate some 
 
     <!-- Form for setting player target attributes and values -->
     <h3>Target Values for {{ selected_player.name }}</h3>
+    <!-- Read-only: a player cannot move between Game Versions. -->
+    <p>Game Version: {{ version_label(selected_player.game_version) }}</p>
 
     <!-- Attribute inputs -->
     <h4>Attributes</h4>
     <form method="POST" action="{{ url_for('target_settings') }}">
         <input type="hidden" name="player_id" value="{{ selected_player.id }}">
         {% for attr in attribute_list %}
-        <label for="{{ attr }}">{{ attr.replace("_", " ").title() }}:</label>
-        <input type="number" name="target_{{ attr }}" id="{{ attr }}" min="25" max="99" value="{{ target_values.get(attr, 99) }}"><br>
+        <label for="{{ attr }}">{{ display_name(attr) }}:</label>
+        <input type="number" name="target_{{ attr }}" id="{{ attr }}" min="25" max="99" value="{{ target_values[attr] }}"><br>
         {% endfor %}
 
         <!-- Badge Inputs -->
         <h4>Badges</h4>
         {% for badge in badge_list %}
-        <label for="{{ badge }}">{{ badge.replace('_', ' ').title() }}:</label>
+        <label for="{{ badge }}">{{ display_name(badge) }}:</label>
             <select name="target_{{ badge }}" id="{{ badge }}">
-                <option value="None" {% if target_badges.get(badge, "Legendary") == 'None' %}selected{% endif %}>None</option>
-                <option value="Bronze" {% if target_badges.get(badge, "Legendary") == 'Bronze' %}selected{% endif %}>Bronze</option>
-                <option value="Silver" {% if target_badges.get(badge, "Legendary") == 'Silver' %}selected{% endif %}>Silver</option>
-                <option value="Gold" {% if target_badges.get(badge, "Legendary") == 'Gold' %}selected{% endif %}>Gold</option>
-                <option value="Hall of Fame" {% if target_badges.get(badge, "Legendary") == 'Hall of Fame' %}selected{% endif %}>Hall of Fame</option>
-                <option value="Legendary" {% if target_badges.get(badge, "Legendary") == 'Legendary' %}selected{% endif %}>Legendary</option>
+                {% for level in badge_levels %}
+                <option value="{{ level }}" {% if target_badges[badge] == level %}selected{% endif %}>{{ level }}</option>
+                {% endfor %}
             </select><br>
         {% endfor %}
         <button type="submit" name="save_targets" value="Save">Save Targets</button>

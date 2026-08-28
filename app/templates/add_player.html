@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block meta_description %}
-Welcome to the NBA 2K26 Player Progression Tracker! You can add new players to the database here.
+Welcome to the NBA 2K Player Progression Tracker! You can add new players to the database here.
 {% endblock %}
 
-{% block title %}Create a New Player{% endblock %} 
+{% block title %}Create a New Player{% endblock %}
 
 {% block content %}
 <main>
@@ -15,13 +15,13 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can add new players to t
         <p>
             You can create a new player here.
             Either you can start filling in the attributes and badges as you want below.
-            What you could also do, is basing your player on a player currently in NBA 2K26.
+            What you could also do, is basing your player on a real NBA player.
             You can take the data from 2kratings.com with the box below.
         </p>
         <label for="player_url_part">Enter Player URL Part from 2Kratings:</label>
         <div class="input-with-info">
             <input type="text" id="player_url_part" name="player_url_part" placeholder="lebron-james">
-            <span class="info-icon" tabindex="0">ℹ️</span>
+            <span class="info-icon" tabindex="0">&#8505;&#65039;</span>
             <div class="tooltip">
                 This is the part that comes after www.2kratings.com when looking at the player screen.
                 For example, for LeBron James, this would be "lebron-james".
@@ -33,100 +33,46 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can add new players to t
 
     <!-- Form for creating a new player. -->
     <form id="create-player-form" method="POST">
+        <!-- Game Version. Required, and deliberately not pre-selected: a
+             silent default would create 2K26 players forever. Which badges
+             appear further down depends on what is picked here. -->
+        <label for="game_version">Game Version:</label>
+        <select name="game_version" id="game_version" required>
+            <option value="" disabled selected>Select a Game Version</option>
+            {% for key, label in versions %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+        </select><br>
+
         <!-- Player Info -->
         <label for="name">Player Name:</label>
-        <input type="text" name="name" id="player-name" required value="{{ player_data['player_name'] if player_data else '' }}"><br>
+        <input type="text" name="name" id="player-name" required><br>
 
-        <!-- Attribute Inputs -->
-        <label for="agility">Agility:</label>
-        <input type="number" name="agility" id="agility" value="{{ player_data['attributes']['agility'] if player_data else 25 }}"><br>
-        <label for="ball_handle">Ball Handle:</label>
-        <input type="number" name="ball_handle" id="ball_handle" value="{{ player_data['attributes']['ball_handle'] if player_data else 25 }}"><br>
-        <label for="block">Block:</label>
-        <input type="number" name="block" id="block" value="{{ player_data['attributes']['block'] if player_data else 25 }}"><br>
-        <label for="close_shot">Close Shot:</label>
-        <input type="number" name="close_shot" id="close_shot" value="{{ player_data['attributes']['close_shot'] if player_data else 25 }}"><br>
-        <label for="defensive_consistency">Defensive Consistency:</label>
-        <input type="number" name="defensive_consistency" id="defensive_consistency" value="{{ player_data['attributes']['defensive_consistency'] if player_data else 25 }}"><br>
-        <label for="defensive_rebound">Defensive Rebound:</label>
-        <input type="number" name="defensive_rebound" id="defensive_rebound" value="{{ player_data['attributes']['defensive_rebound'] if player_data else 25 }}"><br>
-        <label for="draw_foul">Draw Foul:</label>
-        <input type="number" name="draw_foul" id="draw_foul" value="{{ player_data['attributes']['draw_foul'] if player_data else 25 }}"><br>
-        <label for="driving_dunk">Driving Dunk:</label>
-        <input type="number" name="driving_dunk" id="driving_dunk" value="{{ player_data['attributes']['driving_dunk'] if player_data else 25 }}"><br>
-        <label for="free_throw">Free Throw:</label>
-        <input type="number" name="free_throw" id="free_throw" value="{{ player_data['attributes']['free_throw'] if player_data else 25 }}"><br>
-        <label for="hands">Hands:</label>
-        <input type="number" name="hands" id="hands" value="{{ player_data['attributes']['hands'] if player_data else 25 }}"><br>
-        <label for="help_defense_iq">Help Defense IQ:</label>
-        <input type="number" name="help_defense_iq" id="help_defense_iq" value="{{ player_data['attributes']['help_defense_iq'] if player_data else 25 }}"><br>
-        <label for="hustle">Hustle:</label>
-        <input type="number" name="hustle" id="hustle" value="{{ player_data['attributes']['hustle'] if player_data else 25 }}"><br>
-        <label for="intangibles">Intangibles:</label>
-        <input type="number" name="intangibles" id="intangibles" value="{{ player_data['attributes']['intangibles'] if player_data else 25 }}"><br>
-        <label for="interior_defense">Interior Defense:</label>
-        <input type="number" name="interior_defense" id="interior_defense" value="{{ player_data['attributes']['interior_defense'] if player_data else 25 }}"><br>
-        <label for="layup">Layup:</label>
-        <input type="number" name="layup" id="layup" value="{{ player_data['attributes']['layup'] if player_data else 25 }}"><br>
-        <label for="mid_range_shot">Mid-Range Shot:</label>
-        <input type="number" name="mid_range_shot" id="mid_range_shot" value="{{ player_data['attributes']['mid_range_shot'] if player_data else 25 }}"><br>
-        <label for="offensive_consistency">Offensive Consistency:</label>
-        <input type="number" name="offensive_consistency" id="offensive_consistency" value="{{ player_data['attributes']['offensive_consistency'] if player_data else 25 }}"><br>
-        <label for="offensive_rebound">Offensive Rebound:</label>
-        <input type="number" name="offensive_rebound" id="offensive_rebound" value="{{ player_data['attributes']['offensive_rebound'] if player_data else 25 }}"><br>
-        <label for="overall_durability">Overall Durability:</label>
-        <input type="number" name="overall_durability" id="overall_durability" value="{{ player_data['attributes']['overall_durability'] if player_data else 25 }}"><br>
-        <label for="pass_accuracy">Pass Accuracy:</label>
-        <input type="number" name="pass_accuracy" id="pass_accuracy" value="{{ player_data['attributes']['pass_accuracy'] if player_data else 25 }}"><br>
-        <label for="pass_iq">Pass IQ:</label>
-        <input type="number" name="pass_iq" id="pass_iq" value="{{ player_data['attributes']['pass_iq'] if player_data else 25 }}"><br>
-        <label for="pass_perception">Pass Perception:</label>
-        <input type="number" name="pass_perception" id="pass_perception" value="{{ player_data['attributes']['pass_perception'] if player_data else 25 }}"><br>
-        <label for="pass_vision">Pass Vision:</label>
-        <input type="number" name="pass_vision" id="pass_vision" value="{{ player_data['attributes']['pass_vision'] if player_data else 25 }}"><br>
-        <label for="perimeter_defense">Perimeter Defense:</label>
-        <input type="number" name="perimeter_defense" id="perimeter_defense" value="{{ player_data['attributes']['perimeter_defense'] if player_data else 25 }}"><br>
-        <label for="post_control">Post Control:</label>
-        <input type="number" name="post_control" id="post_control" value="{{ player_data['attributes']['post_control'] if player_data else 25 }}"><br>
-        <label for="post_fade">Post Fade:</label>
-        <input type="number" name="post_fade" id="post_fade" value="{{ player_data['attributes']['post_fade'] if player_data else 25 }}"><br>
-        <label for="post_hook">Post Hook:</label>
-        <input type="number" name="post_hook" id="post_hook" value="{{ player_data['attributes']['post_hook'] if player_data else 25 }}"><br>
-        <label for="shot_iq">Shot IQ:</label>
-        <input type="number" name="shot_iq" id="shot_iq" value="{{ player_data['attributes']['shot_iq'] if player_data else 25 }}"><br>
-        <label for="standing_dunk">Standing Dunk:</label>
-        <input type="number" name="standing_dunk" id="standing_dunk" value="{{ player_data['attributes']['standing_dunk'] if player_data else 25 }}"><br>
-        <label for="speed">Speed:</label>
-        <input type="number" name="speed" id="speed" value="{{ player_data['attributes']['speed'] if player_data else 25 }}"><br>
-        <label for="speed_with_ball">Speed with Ball:</label>
-        <input type="number" name="speed_with_ball" id="speed_with_ball" value="{{ player_data['attributes']['speed_with_ball'] if player_data else 25 }}"><br>
-        <label for="stamina">Stamina:</label>
-        <input type="number" name="stamina" id="stamina" value="{{ player_data['attributes']['stamina'] if player_data else 25 }}"><br>
-        <label for="steal">Steal:</label>
-        <input type="number" name="steal" id="steal" value="{{ player_data['attributes']['steal'] if player_data else 25 }}"><br>
-        <label for="strength">Strength:</label>
-        <input type="number" name="strength" id="strength" value="{{ player_data['attributes']['strength'] if player_data else 25 }}"><br>
-        <label for="three_point_shot">Three-Point Shot:</label>
-        <input type="number" name="three_point_shot" id="three_point_shot" value="{{ player_data['attributes']['three_point_shot'] if player_data else 25 }}"><br>
-        <label for="vertical">Vertical:</label>
-        <input type="number" name="vertical" id="vertical" value="{{ player_data['attributes']['vertical'] if player_data else 25 }}"><br>
-
-        <!-- Badge Inputs -->
-        {% set badges = ['aerial_wizard', 'ankle_assassin', 'bail_out', 'boxout_beast', 'break_starter', 'brick_wall', 'challenger', 'deadeye', 'dimer', 'float_game', 'glove', 'handles_for_days', 'high_flying_denier', 'hook_specialist', 'immovable_enforcer', 'interceptor', 'layup_mixmaster', 'lightning_launch', 'limitless_range', 'mini_marksman', 'off_ball_pest', 'on_ball_menace', 'paint_patroller', 'paint_prodigy', 'pick_dodger', 'pogo_stick', 'posterizer', 'post_fade_phenom', 'post_lockdown', 'post_powerhouse', 'post_up_poet', 'physical_finisher', 'rebound_chaser', 'rise_up', 'set_shot_specialist', 'shifty_shooter', 'slippery_off_ball', 'strong_handle', 'unpluckable', 'versatile_visionary'] %}
-
-        {% for badge in badges %}
-            <label for="{{ badge }}">{{ badge.replace('_', ' ').title() }}:</label>
-            <select name="{{ badge }}" id="{{ badge }}">
-                <option value="None" {% if player_data and player_data['badges'][badge] == 'None' %} selected {% endif %}>None</option>
-                <option value="Bronze" {% if player_data and player_data['badges'][badge] == 'Bronze' %} selected {% endif %}>Bronze</option>
-                <option value="Silver" {% if player_data and player_data['badges'][badge] == 'Silver' %} selected {% endif %}>Silver</option>
-                <option value="Gold" {% if player_data and player_data['badges'][badge] == 'Gold' %} selected {% endif %}>Gold</option>
-                <option value="Hall of Fame" {% if player_data and player_data['badges'][badge] == 'Hall of Fame' %} selected {% endif %}>Hall of Fame</option>
-                <option value="Legendary" {% if player_data and player_data['badges'][badge] == 'Legendary' %} selected {% endif %}>Legendary</option>
-            </select><br>
+        <!-- Attribute Inputs. The same 36 in every Game Version. -->
+        <h4>Attributes</h4>
+        {% for attr in attribute_list %}
+        <label for="{{ attr }}">{{ display_name(attr) }}:</label>
+        <input type="number" name="{{ attr }}" id="{{ attr }}" min="25" max="99" value="25"><br>
         {% endfor %}
 
-        
+        <!-- Badge Inputs. Every badge that exists in any Game Version is
+             rendered here; the script below shows only the ones belonging to
+             the version picked above. The server never trusts this - it builds
+             rows from the player's own Game Version, so anything submitted for
+             a badge that version does not have is ignored. -->
+        <h4>Badges</h4>
+        <p id="badge-hint">Pick a Game Version above to see its badges.</p>
+        {% for badge, badge_in in badge_versions.items() %}
+        <div class="badge-field" data-versions="{{ badge_in|join(' ') }}" style="display: none;">
+            <label for="{{ badge }}">{{ display_name(badge) }}:</label>
+            <select name="{{ badge }}" id="{{ badge }}">
+                {% for level in badge_levels %}
+                <option value="{{ level }}">{{ level }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endfor %}
+
         <button type="submit" class="button">Add Player</button>
     </form>
 
@@ -134,6 +80,23 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can add new players to t
 </main>
 
 <script>
+    // Show only the badges that exist in the selected Game Version. This is a
+    // convenience, not a guard - see the comment on the badge inputs above.
+    function filterBadgesByVersion() {
+        var version = document.getElementById('game_version').value;
+        var hint = document.getElementById('badge-hint');
+
+        document.querySelectorAll('.badge-field').forEach(function (field) {
+            var versions = field.dataset.versions.split(' ');
+            field.style.display = (version && versions.indexOf(version) !== -1) ? '' : 'none';
+        });
+
+        hint.style.display = version ? 'none' : '';
+    }
+
+    document.getElementById('game_version').addEventListener('change', filterBadgesByVersion);
+    filterBadgesByVersion();
+
     document.getElementById('scrape-form').addEventListener('submit', function (event) {
         event.preventDefault();
         const urlPart = document.getElementById('player_url_part').value;
@@ -158,9 +121,10 @@ Welcome to the NBA 2K26 Player Progression Tracker! You can add new players to t
                     }
                 }
 
-                // Loop over badges and populate (if you have badges as inputs)
+                // Loop over badges and populate. A badge the selected version
+                // does not have simply has no field to fill in.
                 for (const badge in data.player_data.badges) {
-                    const badgeSelect = document.querySelector(`[name="${badge}"]`);
+                    const badgeSelect = document.querySelector('[name="' + badge + '"]');
                     if (badgeSelect) {
                         badgeSelect.value = data.player_data.badges[badge];
                     }
