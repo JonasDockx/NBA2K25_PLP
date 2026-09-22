@@ -42,32 +42,6 @@ def logged_in(client, test_app):
     return client
 
 
-# --- 5a. the dashboard notice -------------------------------------------------
-
-
-def test_dashboard_carries_the_changeover_notice(logged_in):
-    response = logged_in.get("/dashboard")
-
-    assert response.status_code == 200
-    page = response.get_data(as_text=True)
-    assert 'class="version-notice"' in page
-    assert "NBA 2K26" in page
-    assert "NBA 2K27" in page
-
-
-def test_the_notice_is_not_an_alert(logged_in):
-    """
-    base.html hides every element with class `alert` five seconds after load.
-    That is right for a flash message and wrong for this, which has to stay
-    readable - so the notice must not borrow that class.
-    """
-    page = logged_in.get("/dashboard").get_data(as_text=True)
-
-    notice = page[page.index('class="version-notice"') :]
-    notice = notice[: notice.index("</div>")]
-    assert "alert" not in notice
-
-
 # --- 5b. the scrape warning ---------------------------------------------------
 
 

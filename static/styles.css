@@ -272,10 +272,9 @@ table td {
   color: #ffc107;
 }
 
-/* The two Game Version notices. Deliberately NOT .alert: base.html hides
+/* The 2Kratings scrape warning. Deliberately NOT .alert: base.html hides
    everything carrying that class after five seconds, which is right for a
    flash message and wrong for a notice that has to stay on the page. */
-.version-notice,
 .scrape-warning {
   background-color: rgba(0, 0, 0, 0.8);
   padding: 15px;
@@ -285,26 +284,6 @@ table td {
   text-align: left;
   font-weight: normal;
   line-height: 1.5;
-}
-
-.version-notice {
-  border-left: 4px solid rgba(180, 85, 66, 1);
-}
-
-.version-notice h2 {
-  margin: 0 0 8px 0;
-  font-size: clamp(15px, 2vw, 19px);
-}
-
-.version-notice p {
-  margin: 0 0 10px 0;
-}
-
-.version-notice p:last-child {
-  margin-bottom: 0;
-}
-
-.scrape-warning {
   border-left: 4px solid #ffc107;
   width: 100%;
   box-sizing: border-box;
