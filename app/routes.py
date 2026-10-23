@@ -50,7 +50,7 @@ google = oauth.register(
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     access_token_url="https://accounts.google.com/o/oauth2/token",
     jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
-    client_kwargs={"scope": "openid email profile"}
+    client_kwargs={"scope": "openid email profile", "default_timeout": 10}
 )
 
 def get_owned_player(player_id):
@@ -583,7 +583,14 @@ def google_authorize():
     Note: We do NOT request gmail.send scope or store token.json here.
     This is strictly for authenticating the user.
     """
-    token = google.authorize_access_token()
+    try:
+        token = google.authorize_access_token()
+    except Exception:
+        app.logger.exception("Google login failed at the token exchange")
+        flash("Google sign-in is temporarily unavailable. Please try again, "
+              "or log in with your e-mail and password.", "danger")
+        return redirect(url_for("login"))
+
     nonce = session.get("nonce")
     user_info = google.parse_id_token(token, nonce=nonce)
     user_email = user_info["email"]
