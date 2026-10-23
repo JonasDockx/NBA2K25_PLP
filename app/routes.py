@@ -10,7 +10,6 @@ import requests
 from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import login_user, current_user, logout_user, login_required
 from authlib.integrations.flask_client import OAuth
-from werkzeug.security import generate_password_hash
 from app import app, db, bcrypt
 from app.models import (
     User,
@@ -76,6 +75,23 @@ def rows_for(player):
     attributes = {row.attribute_key: row for row in player.attributes}
     badges = {row.badge_key: row for row in player.badges}
     return attributes, badges
+
+
+def password_matches(user, password):
+    """
+    True only if this user has a bcrypt password that matches.
+
+    A user can have no password at all (Google sign-in makes those), or a
+    hash bcrypt cannot read, or send a password bcrypt refuses to hash at
+    all (over 72 bytes). None of those is a server fault, so none of them
+    may reach the user as a 500.
+    """
+    if not user or not user.password or not password:
+        return False
+    try:
+        return bcrypt.check_password_hash(user.password, password)
+    except ValueError:
+        return False
 
 
 def whole_number(raw, default):
@@ -167,7 +183,7 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         # Check if user exists and password is correct
-        if user and bcrypt.check_password_hash(user.password, password):
+        if password_matches(user, password):
             session.permanent = True
             login_user(user)
             flash("Login successful!", "success")
@@ -604,7 +620,7 @@ def profile():
 
         # Validate the password and update it
         if new_password == confirm_password:
-            hashed_password = generate_password_hash(new_password)
+            hashed_password = bcrypt.generate_password_hash(new_password).decode("utf-8")
             current_user.password = hashed_password
             db.session.commit()
             flash(
